@@ -1,0 +1,149 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<Base title="Our story" description="How Gummikins™ began: handmade crochet companions made one at a time in Wisconsin, for the moments when you can’t be there.">
+  <section class="wrap page-head about-head">
+    <p class="eyebrow">Our story</p>
+    <h1>Small creatures.<br />Big comfort.</h1>
+  </section>
+
+  <section class="wrap story">
+    <figure class="story__photo">
+      <img src="/images/placeholder/moss.webp" alt="Three handmade Gummikins sitting together on moss" width="1060" height="494" />
+    </figure>
+    <div class="story__text prose">
+      <p class="story__drop">
+        Gummikins started with a ball of yarn, a crochet hook, and someone I loved who lived too far away to hug.
+      </p>
+      <p>
+        I wanted to send something that would sit with them when I couldn’t. Not a card that gets tucked in a drawer, but something soft
+        they could pick up, squeeze, and keep close. So I made a little round creature with two shiny eyes and a stitched smile, and
+        mailed it off.
+      </p>
+      <p>
+        It went everywhere with them. Then friends asked for one. Then friends of friends. Before long there were Gummikins in college
+        dorms, hospital rooms, car cupholders, and on the arm of Grandpa’s TV chair.
+      </p>
+      <h2>Made by hand, on purpose</h2>
+      <p>
+        Every Gummikins is still crocheted by hand, one stitch at a time, here in Wisconsin. That means no two are exactly alike. A
+        slightly lopsided smile or a rounder tummy isn’t a mistake. It’s how you know a real person made it for you.
+      </p>
+      <p>
+        Leftover yarn never goes to waste. It becomes Little Drops, the tiny Gummikins we tuck into orders as a surprise.
+      </p>
+      <h2>Comfort, in whatever shape you need</h2>
+      <p>
+        Some people give Gummikins as gifts. Some keep them close because of how they feel in their hands: the softness, the squish, the
+        rhythm of the stitches. Many of our favorite customers are neurodivergent kids, teens, and adults who simply like having something
+        soft and quiet to hold. And some people just think they’re wonderful. All of those are good reasons.
+      </p>
+      <p class="story__sign hand">Thank you for bringing one home. <Icon name="heart" /></p>
+    </div>
+  </section>
+
+  <section class="wrap values">
+    <div class="value">
+      <h3>Handmade, always</h3>
+      <p>Every piece is crocheted, stuffed, and finished by hand. No factories, no shortcuts.</p>
+    </div>
+    <div class="value">
+      <h3>Small batches</h3>
+      <p>We make a few at a time, so colors come and go. When they’re gone, they’re gone until the next batch.</p>
+    </div>
+    <div class="value">
+      <h3>Honest about feel</h3>
+      <p>We describe exactly how each piece feels, so you can choose what’s right for you or someone you love.</p>
+    </div>
+  </section>
+
+  <section class="wrap about-cta">
+    <h2>Ready to meet yours?</h2>
+    <a class="btn" href="/shop">Shop Gummikins <Icon name="arrow" /></a>
+  </section>
+</Base>
+
+<style>
+  .about-head h1 {
+    max-width: 14ch;
+  }
+  .story {
+    display: grid;
+    gap: 2.5rem;
+  }
+  .story__photo {
+    margin: 0;
+  }
+  .story__photo img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .story__drop {
+    font-family: var(--font-hand);
+    font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+    line-height: 1.2;
+    color: var(--chocolate-deep);
+  }
+  .story__sign {
+    font-size: 1.8rem;
+    color: var(--clay-deep);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .story__sign :global(svg) {
+    width: 28px;
+    height: 28px;
+  }
+  @media (min-width: 960px) {
+    .story {
+      grid-template-columns: 1fr 1.1fr;
+      gap: 4.5rem;
+      align-items: start;
+    }
+    .story__photo {
+      position: sticky;
+      top: 100px;
+    }
+  }
+  .values {
+    display: grid;
+    gap: 1rem;
+    margin-top: clamp(3rem, 8vw, 5rem);
+  }
+  .value {
+    padding: 1.6rem;
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+  }
+  .value:nth-child(1) {
+    background: #f6e8c9;
+  }
+  .value:nth-child(2) {
+    background: #e3ecf1;
+  }
+  .value:nth-child(3) {
+    background: #e3e9dc;
+  }
+  .value p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  @media (min-width: 800px) {
+    .values {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+    .value:nth-child(2) {
+      translate: 0 1.5rem;
+    }
+  }
+  .about-cta {
+    text-align: center;
+    padding-top: clamp(4rem, 8vw, 6rem);
+  }
+</style>

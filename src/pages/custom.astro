@@ -1,0 +1,129 @@
+---
+import Base from '../layouts/Base.astro';
+import Plush3D from '../components/Plush3D.astro';
+import { YARN } from '../scripts/gummikin3d.js';
+const colors = ['Cherry', 'Honey', 'Bluebell', 'Moss', 'Rosebud', 'Oatmeal', 'Cocoa', 'Lavender', 'Something else'];
+---
+
+<Base title="Giant Gummikins & special orders" description="Order a Giant Gummikins™ (16–18 inches) or a custom color. Made to order by hand. Tell us what you have in mind.">
+  <section class="wrap custom">
+    <div class="custom__intro">
+      <p class="eyebrow">Special orders</p>
+      <h1>Giant Gummikins, made just for you</h1>
+      <p class="lede">
+        Giants are 16–18" of pillow-sized comfort, crocheted to order. They start at $120 and take a little time, so we make each one after
+        we’ve talked with you.
+      </p>
+      <Plush3D color={YARN.bluebell} image="/images/products/hero-bluebell.webp" alt="A 3D Gummikins you can spin and squish" />
+      <ol class="how">
+        <li><strong>Tell us your idea.</strong> Color, size, who it’s for, and when you need it.</li>
+        <li><strong>We reply within 2 business days</strong> with a timeline and final price.</li>
+        <li><strong>We make it by hand</strong> and send progress photos along the way.</li>
+        <li><strong>It ships to you</strong> (flat $15.95 within the US) ready for hugging.</li>
+      </ol>
+      <p class="custom__fine">We can also do matching sets, custom colors in other sizes, and gift bundles with a Nest Blanket. Special orders are final sale.</p>
+    </div>
+
+    <form class="custom__form" data-demo-form novalidate>
+      <div class="form-body">
+        <h2>Start a special order</h2>
+        <div class="field">
+          <label for="c-name">Your name</label>
+          <input id="c-name" name="name" autocomplete="name" required />
+          <p class="error" data-error aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="c-email">Email</label>
+          <input id="c-email" name="email" type="email" autocomplete="email" required />
+          <p class="error" data-error aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="c-type">What would you like?</label>
+          <select id="c-type" name="type" data-item-select>
+            <option value="giant">Giant Gummikins (16–18")</option>
+            <option value="custom-color">Custom color in another size</option>
+            <option value="set">Matching set or gift bundle</option>
+            <option value="other">Something else</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="c-color">Color</label>
+          <select id="c-color" name="color">
+            {colors.map((c) => <option>{c}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="c-date">When do you need it?</label>
+          <input id="c-date" name="date" type="date" />
+          <p class="hint">Optional. Giants usually take 2–3 weeks.</p>
+        </div>
+        <div class="field">
+          <label for="c-msg">Tell us about it</label>
+          <textarea id="c-msg" name="message" required placeholder="Who is it for? Any details that would make it special?"></textarea>
+          <p class="error" data-error aria-live="polite"></p>
+        </div>
+        <button class="btn btn--block" type="submit">Send my request</button>
+      </div>
+      <div class="form-success" role="status">
+        <p class="hand">Thank you!</p>
+        <p>We’ve got your request and will reply within 2 business days with timing and a price.</p>
+      </div>
+    </form>
+  </section>
+</Base>
+
+<style>
+  .custom {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: clamp(2.5rem, 6vw, 4.5rem) 0;
+  }
+  .custom__intro :global(.plush3d) {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+  .how {
+    padding-left: 1.3rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .custom__fine {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .custom__form {
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    align-self: start;
+  }
+  .custom__form .form-body {
+    display: grid;
+    gap: 1rem;
+  }
+  .custom__form h2 {
+    font-size: 2.2rem;
+    margin: 0;
+  }
+  .form-success .hand {
+    font-size: 2rem;
+    margin: 0;
+  }
+  @media (min-width: 960px) {
+    .custom {
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+    }
+    .custom__form {
+      position: sticky;
+      top: 100px;
+    }
+  }
+</style>
+
+<script>
+  const item = new URL(location.href).searchParams.get('item');
+  const select = document.querySelector<HTMLSelectElement>('[data-item-select]');
+  if (select && item && item !== 'giant-gummikins') select.value = 'custom-color';
+</script>

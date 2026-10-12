@@ -1,0 +1,95 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+---
+
+<Base title="Contact" description="Questions about an order, a gift, or a special request? Get in touch with Gummikins™.">
+  <section class="wrap contact">
+    <div>
+      <p class="eyebrow">Say hello</p>
+      <h1>We’d love to hear from you</h1>
+      <p class="lede">Questions about an order, a gift, or how something feels? Send us a note and we’ll reply within 2 business days.</p>
+      <ul class="contact__ways">
+        <li><Icon name="mail" /><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        <li><Icon name="instagram" /><a href={site.instagramUrl} target="_blank" rel="noopener">@{site.instagram}</a></li>
+        <li><Icon name="leaf" /><span>Handmade in {site.location}</span></li>
+      </ul>
+      <p>Looking for a Giant or a custom color? Use the <a href="/custom">special order form</a> instead.</p>
+    </div>
+    <form class="contact__form" data-demo-form novalidate>
+      <div class="form-body">
+        <div class="field">
+          <label for="f-name">Your name</label>
+          <input id="f-name" name="name" autocomplete="name" required />
+          <p class="error" data-error aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" required />
+          <p class="error" data-error aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="f-topic">What’s this about?</label>
+          <select id="f-topic" name="topic">
+            <option>A question about a product</option>
+            <option>An order I placed</option>
+            <option>Gifts</option>
+            <option>Wholesale or markets</option>
+            <option>Something else</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-msg">Message</label>
+          <textarea id="f-msg" name="message" required></textarea>
+          <p class="error" data-error aria-live="polite"></p>
+        </div>
+        <button class="btn btn--block" type="submit">Send message</button>
+      </div>
+      <p class="form-success" role="status">Thank you! Your note is on its way. We’ll reply within 2 business days.</p>
+    </form>
+  </section>
+</Base>
+
+<style>
+  .contact {
+    display: grid;
+    gap: 2.5rem;
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+  .contact__ways {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    display: grid;
+    gap: 0.8rem;
+    font-weight: 600;
+  }
+  .contact__ways li {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+  }
+  .contact__ways :global(svg) {
+    width: 24px;
+    height: 24px;
+    color: var(--moss-deep);
+  }
+  .contact__form {
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    align-self: start;
+  }
+  .contact__form .form-body {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 960px) {
+    .contact {
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+    }
+  }
+</style>

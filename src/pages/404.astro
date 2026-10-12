@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import Plush3D from '../components/Plush3D.astro';
+import { YARN } from '../scripts/gummikin3d.js';
+---
+
+<Base title="Page not found" noindex>
+  <section class="wrap lost">
+    <div class="lost__plush">
+      <Plush3D color={YARN.lavender} image="/images/products/hero-lavender.webp" alt="A lavender Gummikins looking a little lost" />
+    </div>
+    <div>
+      <p class="eyebrow">404</p>
+      <h1>This Gummikins wandered off.</h1>
+      <p class="lede">We couldn’t find that page. Give this one a squish for comfort, then head back to the shop.</p>
+      <a class="btn" href="/shop">Shop Gummikins</a>
+      <a class="btn btn--ghost" href="/">Go home</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    display: grid;
+    gap: 1rem;
+    align-items: center;
+    padding-block: 3rem;
+  }
+  .lost__plush {
+    max-width: 380px;
+    width: 100%;
+    margin-inline: auto;
+  }
+  .lost .btn {
+    margin: 0.3rem 0.4rem 0 0;
+  }
+  @media (min-width: 860px) {
+    .lost {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

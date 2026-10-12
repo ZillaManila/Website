@@ -1,0 +1,152 @@
+---
+import { availability, leadColor, priceLabel, type Product } from '../lib/products';
+interface Props {
+  product: Product;
+  index?: number;
+}
+const { product, index = 0 } = Astro.props;
+const d = product.data;
+const lead = leadColor(product);
+const status = availability(product);
+const toneClass = { ok: '', low: 'badge--low', out: 'badge--out', special: 'badge--special' }[status.tone];
+---
+
+<article class="card reveal" style={`--i:${index % 4}`} data-category={d.category} data-size={d.size}>
+  <a href={`/shop/${product.id}`} class="card__link">
+    <div class="card__media" style={`--tint:${lead.hex}`}>
+      <img class="card__img" src={lead.image} alt={`${d.name} in ${lead.name}`} width="1200" height="1200" loading="lazy" />
+      {d.gallery[0] && <img class="card__img card__img--alt" src={d.gallery[0]} alt="" width="1200" height="1200" loading="lazy" />}
+      <span class:list={['badge', 'card__badge', toneClass]}><span class="dot"></span>{status.label}</span>
+    </div>
+    <div class="card__body">
+      <div class="card__row">
+        <h3 class="card__name">{d.name}</h3>
+        <p class="card__price">{priceLabel(product)}</p>
+      </div>
+      <p class="card__meta">{d.sizeLabel}</p>
+      <ul class="card__colors" aria-label="Colors">
+        {
+          d.colors.map((c) => (
+            <li class:list={{ 'is-out': c.stock === 0 && !d.specialOrder }} style={`--c:${c.hex}`} title={`${c.name}${c.stock === 0 && !d.specialOrder ? ' (sold out)' : ''}`}>
+              <span class="visually-hidden">
+                {c.name}
+                {c.stock === 0 && !d.specialOrder ? ', sold out' : ''}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </a>
+</article>
+
+<style>
+  .card__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  .card__media {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(circle at 50% 62%, color-mix(in srgb, var(--tint) 16%, transparent), transparent 62%),
+      var(--paper);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(91, 64, 50, 0.06);
+    transition: transform 0.5s var(--ease-spring), box-shadow 0.4s;
+  }
+  .card__img {
+    position: absolute;
+    inset: 4%;
+    width: 92%;
+    height: 92%;
+    object-fit: contain;
+    transition: transform 0.6s var(--ease-spring), opacity 0.4s;
+    transform-origin: 50% 80%;
+  }
+  .card__img--alt {
+    opacity: 0;
+  }
+  .card__link:hover .card__media {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+  .card__link:hover .card__img {
+    transform: scale(1.05, 0.96);
+  }
+  .card__link:hover .card__img--alt {
+    opacity: 1;
+  }
+  .card__link:hover .card__img:not(.card__img--alt) {
+    opacity: 0;
+  }
+  .card__badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background-color: color-mix(in srgb, var(--paper) 70%, transparent);
+    backdrop-filter: blur(6px);
+  }
+  .card__body {
+    padding: 1rem 0.4rem 0;
+  }
+  .card__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+  .card__name {
+    font-size: 1.65rem;
+    margin: 0;
+  }
+  .card__price {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+  .card__meta {
+    margin: 0.1rem 0 0.6rem;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+  .card__colors {
+    display: flex;
+    gap: 0.4rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .card__colors li {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    position: relative;
+  }
+  .card__colors li.is-out {
+    opacity: 0.4;
+  }
+  .card__colors li.is-out::after {
+    content: '';
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    top: 50%;
+    height: 2px;
+    background: var(--chocolate);
+    transform: rotate(-45deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card__img--alt {
+      display: none;
+    }
+    .card__link:hover .card__img:not(.card__img--alt) {
+      opacity: 1;
+    }
+  }
+</style>

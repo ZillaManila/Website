@@ -1,0 +1,229 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getProducts } from '../../lib/products';
+
+const products = await getProducts();
+const filters = [
+  { key: 'all', label: 'Everything' },
+  { key: 'gummikins', label: 'Gummikins' },
+  { key: 'keychains', label: 'Keychains' },
+  { key: 'blankets', label: 'Blankets & sensory' },
+  { key: 'instock', label: 'Ready to ship' },
+];
+---
+
+<Base title="Shop" description="Shop handmade Gummikins™ plush in every size, from pocket keychains to Large, plus Nest Blankets and sensory-friendly Texture Squares.">
+  <section class="wrap page-head shop-head">
+    <div>
+      <p class="eyebrow">The shop</p>
+      <h1>Find your Gummikins</h1>
+      <p>Every piece is handmade in small batches, so when a color is gone, it’s gone until the next batch. Prices include everything but shipping and tax.</p>
+    </div>
+    <aside class="shop-head__ship">
+      <Icon name="truck" />
+      <p><strong>Flat-rate shipping</strong> by size, from $6.95. <a href="/policies/shipping">Details</a></p>
+    </aside>
+  </section>
+
+  <section class="wrap shop">
+    <div class="filters" role="toolbar" aria-label="Filter products">
+      {
+        filters.map((f, i) => (
+          <button type="button" class="filter" data-filter={f.key} aria-pressed={i === 0 ? 'true' : 'false'}>
+            {f.label}
+          </button>
+        ))
+      }
+      <p class="filters__count" aria-live="polite" data-count>{products.length} pieces</p>
+    </div>
+
+    <div class="shop__grid" data-grid>
+      {
+        products.map((p, i) => (
+          <div class="shop__item" data-category={p.data.category} data-instock={String(!p.data.specialOrder && p.data.colors.some((c) => c.stock > 0))}>
+            <ProductCard product={p} index={i} />
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="shop__empty" data-empty hidden>
+      <p class="hand">Nothing here right now.</p>
+      <p>This batch has found its homes. Join the newsletter below to hear about the next one.</p>
+      <button type="button" class="btn btn--ghost" data-reset>Show everything</button>
+    </div>
+
+    <aside class="custom-cta">
+      <div>
+        <p class="eyebrow">Something bigger?</p>
+        <h2>Giant Gummikins &amp; special orders</h2>
+        <p>Giants (16–18") and custom colors are made just for you. Tell us what you have in mind and we’ll reply with timing and a price.</p>
+      </div>
+      <a href="/custom" class="btn">Start a special order <Icon name="arrow" /></a>
+    </aside>
+  </section>
+</Base>
+
+<style>
+  .shop-head {
+    display: grid;
+    gap: 1.5rem;
+    align-items: end;
+  }
+  .shop-head__ship {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    background: var(--paper);
+    max-width: 360px;
+  }
+  .shop-head__ship :global(svg) {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    color: var(--moss-deep);
+  }
+  .shop-head__ship p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  @media (min-width: 900px) {
+    .shop-head {
+      grid-template-columns: 1fr auto;
+    }
+  }
+  .filters {
+    position: sticky;
+    top: 68px;
+    z-index: 5;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    overflow-x: auto;
+    padding: 0.75rem var(--gutter);
+    margin: 0 calc(var(--gutter) * -1) 1.5rem;
+    background: color-mix(in srgb, var(--cream) 88%, transparent);
+    backdrop-filter: blur(10px);
+    scrollbar-width: none;
+  }
+  .filter {
+    flex: none;
+    min-height: 44px;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 2px solid rgba(91, 64, 50, 0.18);
+    background: var(--paper);
+    color: var(--chocolate);
+    font: 600 0.92rem var(--font-body);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .filter:hover {
+    border-color: var(--chocolate);
+  }
+  .filter[aria-pressed='true'] {
+    background: var(--chocolate);
+    border-color: var(--chocolate);
+    color: var(--cream);
+  }
+  .filters__count {
+    margin: 0 0 0 auto;
+    padding-left: 1rem;
+    flex: none;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  .shop__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 2.5rem 1.5rem;
+  }
+  @media (max-width: 559px) {
+    .shop__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem 0.9rem;
+    }
+    .shop__grid :global(.card__name) {
+      font-size: 1.3rem;
+    }
+    .shop__grid :global(.card__row) {
+      flex-direction: column;
+      gap: 0;
+    }
+    .shop__grid :global(.card__badge) {
+      top: 0.6rem;
+      left: 0.6rem;
+      font-size: 0.68rem;
+    }
+  }
+  .shop__item[hidden] {
+    display: none;
+  }
+  .shop__empty {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  .shop__empty p {
+    margin-inline: auto;
+  }
+  .shop__empty .hand {
+    font-size: 2rem;
+  }
+  .custom-cta {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: clamp(3rem, 8vw, 5rem);
+    padding: clamp(1.75rem, 5vw, 3rem);
+    border-radius: var(--radius-lg);
+    background: #f5e0dd;
+  }
+  .custom-cta h2 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+  }
+  .custom-cta p:last-child {
+    margin: 0;
+  }
+  @media (min-width: 860px) {
+    .custom-cta {
+      grid-template-columns: 1fr auto;
+    }
+  }
+</style>
+
+<script>
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.shop__item'));
+  const count = document.querySelector('[data-count]');
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+
+  function apply(key: string, push = true) {
+    if (!buttons.some((b) => b.dataset.filter === key)) key = 'all';
+    let shown = 0;
+    for (const el of items) {
+      const show = key === 'all' || (key === 'instock' ? el.dataset.instock === 'true' : el.dataset.category === key);
+      el.hidden = !show;
+      if (show) {
+        shown++;
+        el.querySelector('.reveal')?.classList.add('is-in');
+      }
+    }
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === key)));
+    if (count) count.textContent = `${shown} ${shown === 1 ? 'piece' : 'pieces'}`;
+    if (empty) empty.hidden = shown > 0;
+    if (push) {
+      const url = new URL(location.href);
+      if (key === 'all') url.searchParams.delete('filter');
+      else url.searchParams.set('filter', key);
+      history.replaceState(null, '', url);
+    }
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter || 'all')));
+  document.querySelector('[data-reset]')?.addEventListener('click', () => apply('all'));
+  apply(new URL(location.href).searchParams.get('filter') || 'all', false);
+</script>

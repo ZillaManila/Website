@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+import { policies } from '../../data/policies';
+
+export function getStaticPaths() {
+  return Object.keys(policies).map((slug) => ({ params: { slug } }));
+}
+const policy = policies[Astro.params.slug as string];
+const others = Object.entries(policies).filter(([k]) => k !== Astro.params.slug);
+---
+
+<Base title={policy.title} description={policy.description}>
+  <section class="wrap page-head">
+    <p class="eyebrow">Policies</p>
+    <h1>{policy.title}</h1>
+    <p>Last updated {policy.updated}</p>
+  </section>
+  <div class="wrap policy">
+    <div class="prose" set:html={policy.body} />
+    <nav class="policy__nav" aria-label="Other policies">
+      <h2>More policies</h2>
+      <ul>{others.map(([k, p]) => <li><a href={`/policies/${k}`}>{p.title}</a></li>)}</ul>
+    </nav>
+  </div>
+</Base>
+
+<style>
+  .policy {
+    display: grid;
+    gap: 3rem;
+  }
+  .policy :global(table) {
+    width: 100%;
+    max-width: 520px;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+  }
+  .policy :global(th),
+  .policy :global(td) {
+    text-align: left;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid rgba(91, 64, 50, 0.12);
+  }
+  .policy :global(th) {
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .policy__nav {
+    align-self: start;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+  }
+  .policy__nav h2 {
+    font-size: 1.6rem;
+  }
+  .policy__nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  @media (min-width: 960px) {
+    .policy {
+      grid-template-columns: 1fr 260px;
+    }
+    .policy__nav {
+      position: sticky;
+      top: 100px;
+    }
+  }
+</style>

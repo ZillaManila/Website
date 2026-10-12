@@ -1,0 +1,827 @@
+---
+import Base from '../layouts/Base.astro';
+import Plush3D from '../components/Plush3D.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Icon from '../components/Icon.astro';
+import SizeStory from '../components/SizeStory.astro';
+import Testimonials from '../components/Testimonials.astro';
+import InstagramGrid from '../components/InstagramGrid.astro';
+import FaqList from '../components/FaqList.astro';
+import { getProducts } from '../lib/products';
+import { reasons, site } from '../data/site';
+import { faqs } from '../data/faq';
+import { YARN } from '../scripts/gummikin3d.js';
+
+const products = await getProducts();
+const featured = products.filter((p) => p.data.featured).slice(0, 4);
+const swatches = [
+  { key: 'cherry', name: 'Cherry' },
+  { key: 'honey', name: 'Honey' },
+  { key: 'bluebell', name: 'Bluebell' },
+  { key: 'moss', name: 'Moss' },
+  { key: 'rosebud', name: 'Rosebud' },
+  { key: 'oatmeal', name: 'Oatmeal' },
+  { key: 'cocoa', name: 'Cocoa' },
+  { key: 'lavender', name: 'Lavender' },
+] as const;
+const homeFaqs = faqs.flatMap((g) => g.items).filter((q) => q.home);
+---
+
+<Base>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__blob" aria-hidden="true"></div>
+    <svg class="hero__leaf hero__leaf--a" viewBox="0 0 60 60" aria-hidden="true"><path d="M8 52C8 26 24 10 52 8c0 26-16 42-44 44Z" fill="#8c9f7a"></path><path d="M8 52 40 20" stroke="#5e7150" stroke-width="2" fill="none"></path></svg>
+    <svg class="hero__leaf hero__leaf--b" viewBox="0 0 60 60" aria-hidden="true"><path d="M8 52C8 26 24 10 52 8c0 26-16 42-44 44Z" fill="#a9b897"></path><path d="M8 52 40 20" stroke="#5e7150" stroke-width="2" fill="none"></path></svg>
+    <svg class="hero__heart hero__heart--a" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-7.5-10.4A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7.5 2.6C19.5 16.4 12 21 12 21Z" fill="#d68c87"></path></svg>
+    <svg class="hero__heart hero__heart--b" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-7.5-10.4A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7.5 2.6C19.5 16.4 12 21 12 21Z" fill="#d4a64f"></path></svg>
+
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">Handmade crochet companions</p>
+        <h1>
+          When you can’t be there, <span class="hero__accent">a Gummikins can.</span>
+        </h1>
+        <p class="lede">
+          {site.supporting} Soft, squishy little creatures, crocheted by hand one at a time for the people you love.
+        </p>
+        <div class="hero__ctas">
+          <a href="/shop" class="btn">Shop Gummikins <Icon name="arrow" /></a>
+          <a href="#sizes" class="btn btn--ghost">Meet the sizes</a>
+        </div>
+        <ul class="hero__trust">
+          <li><Icon name="hand" /> Made by hand</li>
+          <li><Icon name="truck" /> Ships in {site.turnaround}</li>
+          <li><Icon name="heart" /> Free Little Drop</li>
+        </ul>
+      </div>
+
+      <div class="hero__stage">
+        <Plush3D
+          id="hero-plush"
+          mode="hero"
+          color={YARN.cherry}
+          image="/images/products/hero-cherry.webp"
+          alt="A round red crochet Gummikins with shiny black eyes and a stitched smile"
+          eager
+        />
+        <p class="hero__hint hand" aria-hidden="true">
+          <svg viewBox="0 0 60 40"><path d="M4 30C18 34 34 28 44 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="m36 12 8-1 1 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          spin me, squish me!
+        </p>
+        <fieldset class="swatches" aria-label="Try a yarn color">
+          <legend class="visually-hidden">Try a yarn color</legend>
+          {
+            swatches.map((s, i) => (
+              <label class="swatch" style={`--c:${YARN[s.key]}`}>
+                <input type="radio" name="hero-color" value={YARN[s.key]} data-image={`/images/products/hero-${s.key}.webp`} checked={i === 0} />
+                <span class="visually-hidden">{s.name}</span>
+              </label>
+            ))
+          }
+          <output class="swatches__name hand" data-swatch-name>Cherry</output>
+        </fieldset>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIBBON -->
+  <div class="ribbon" aria-hidden="true">
+    <div class="ribbon__track">
+      {
+        [0, 1].map(() => (
+          <span>
+            Made by hand <i /> No two alike <i /> Soft enough to squish <i /> Here when you can’t be <i /> Small batches, as supplies last <i />
+          </span>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- WHAT IS -->
+  <section class="section what">
+    <div class="wrap what__grid">
+      <figure class="what__photo reveal">
+        <img src="/images/placeholder/moss.webp" alt="Three crochet Gummikins, red, yellow, and blue, sitting together on moss with tiny mushrooms" width="1060" height="494" loading="lazy" />
+        <figcaption class="hand">Cherry, Honey &amp; Bluebell, out for a walk</figcaption>
+      </figure>
+      <div class="what__copy">
+        <p class="eyebrow reveal">So, what is a Gummikins?</p>
+        <h2 class="reveal" style="--i:1">A little creature made to be held.</h2>
+        <p class="reveal" style="--i:2">
+          Gummikins are round, soft, crocheted companions with two shiny eyes and a stitched smile. Each one is made by hand, stitch by
+          stitch, and stuffed until it is squishy but still holds its shape.
+        </p>
+        <p class="reveal" style="--i:3">
+          They are part plush, part pocket comfort, part tiny friend. People give them to say <em>I’m thinking of you</em>, keep them close
+          for the feel of them in their hands, or simply bring one home because it made them smile.
+        </p>
+        <p class="reveal" style="--i:4">
+          Because every Gummikins is handmade, no two are exactly alike. A slightly crooked smile or a rounder tummy is part of who they are.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIZES (scroll story) -->
+  <SizeStory />
+
+  <!-- FEATURED -->
+  <section class="section featured" aria-labelledby="featured-title">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Ready to go home</p>
+          <h2 id="featured-title">Choose your Gummikins</h2>
+        </div>
+        <a href="/shop" class="btn btn--ghost">See everything <Icon name="arrow" /></a>
+      </div>
+      <div class="featured__grid">
+        {featured.map((p, i) => <ProductCard product={p} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- REASONS -->
+  <section class="section reasons" aria-labelledby="reasons-title">
+    <div class="wrap reasons__grid">
+      <div class="reasons__intro">
+        <p class="eyebrow">Why a Gummikins?</p>
+        <h2 id="reasons-title">There’s no wrong reason to want one.</h2>
+        <p class="lede">
+          Some are gifts. Some are companions. Some are for hands that like something soft to hold. All of those are good reasons.
+        </p>
+        <a href="/shop" class="btn">Find yours</a>
+      </div>
+      <ul class="reasons__notes">
+        {
+          reasons.map((r, i) => (
+            <li class={`note note--${r.tint} reveal`} style={`--i:${i % 3}; --rot:${[-2.2, 1.6, -1, 2.4, -1.8, 1.2][i]}deg`}>
+              <h3>{r.title}</h3>
+              <p>{r.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- SENSORY -->
+  <section class="sensory" aria-labelledby="sensory-title">
+    <div class="wrap sensory__grid">
+      <div>
+        <p class="eyebrow">Made to be touched</p>
+        <h2 id="sensory-title">How a Gummikins feels</h2>
+        <p>
+          Many of our customers love Gummikins for the way they feel: the soft give of a squeeze, the rhythm of stitches under a thumb,
+          the steady weight in a lap. That includes plenty of neurodivergent kids, teens, and grown-ups, and everyone is welcome here.
+        </p>
+        <p>
+          Every product page describes the real physical details, so you can choose the one that feels right before it arrives.
+        </p>
+        <a href="/shop?filter=blankets" class="btn btn--moss">Shop sensory-friendly pieces</a>
+      </div>
+      <ul class="feels">
+        <li class="reveal"><strong>Soft</strong><span>Smooth, fuzzy yarn that is gentle against skin.</span></li>
+        <li class="reveal" style="--i:1"><strong>Squishy</strong><span>Gives when you squeeze, then slowly settles back into shape.</span></li>
+        <li class="reveal" style="--i:2"><strong>Textured</strong><span>Even rows of rounded stitches you can trace with a fingertip.</span></li>
+        <li class="reveal" style="--i:3"><strong>Quiet</strong><span>No rattles, crinkles, beads, or buttons. Just yarn and stuffing.</span></li>
+        <li class="reveal" style="--i:4"><strong>Weighted just right</strong><span>From feather-light keychains to the settled heft of a Large.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section process" aria-labelledby="process-title">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <p class="eyebrow">From yarn to friend</p>
+        <h2 id="process-title">How every Gummikins is made</h2>
+      </div>
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step__num hand">1</span>
+          <h3>Choosing the yarn</h3>
+          <p>We pick soft, cozy yarns in warm, natural colors, and feel every skein before it becomes a Gummikins.</p>
+        </li>
+        <li class="step reveal" style="--i:1">
+          <span class="step__num hand">2</span>
+          <h3>Crocheting by hand</h3>
+          <p>Each body is worked in a continuous spiral, one stitch at a time. A Small takes a few hours. A Giant takes days.</p>
+        </li>
+        <li class="step reveal" style="--i:2">
+          <span class="step__num hand">3</span>
+          <h3>Stuffing &amp; shaping</h3>
+          <p>We stuff slowly, a little at a time, until it is squishy but holds its round, huggable shape.</p>
+        </li>
+        <li class="step reveal" style="--i:3">
+          <span class="step__num hand">4</span>
+          <h3>Eyes, smile &amp; a last check</h3>
+          <p>Safety eyes go in, the smile is embroidered by hand, and every Gummikins gets a final squeeze test before it leaves.</p>
+        </li>
+      </ol>
+
+      <aside class="drop reveal">
+        <img src="/images/products/little-drop.webp" alt="A tiny pink teardrop-shaped Gummikins" width="1200" height="1200" loading="lazy" />
+        <div>
+          <p class="eyebrow">Nothing goes to waste</p>
+          <h3 id="little-drop">Meet the Little Drop</h3>
+          <p>
+            Leftover yarn becomes Little Drops: tiny Gummikins we tuck into orders as a free surprise. They are not sold on their own, and
+            they are only around as supplies last.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <Testimonials />
+
+  <InstagramGrid />
+
+  <!-- FAQ -->
+  <section class="section faq-home" aria-labelledby="faq-home-title">
+    <div class="wrap faq-home__grid">
+      <div>
+        <p class="eyebrow">Good to know</p>
+        <h2 id="faq-home-title">Questions, answered</h2>
+        <p>Shipping, care, handmade quirks, and special orders. If you can’t find your answer, just ask.</p>
+        <div class="faq-home__links">
+          <a href="/faq" class="btn btn--ghost">All FAQs</a>
+          <a href="/contact" class="btn btn--ghost">Contact us</a>
+        </div>
+      </div>
+      <FaqList items={homeFaqs} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Hero */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(2rem, 6vw, 4.5rem) clamp(3rem, 7vw, 5rem);
+  }
+  .hero__grid {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+    align-items: center;
+  }
+  .hero__copy h1 {
+    max-width: 13ch;
+    font-size: clamp(2.7rem, 6.4vw, 4.6rem);
+  }
+  .hero__accent {
+    display: block;
+    color: var(--clay-deep);
+  }
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.75rem 0 1.5rem;
+  }
+  .hero__trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .hero__trust li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .hero__trust :global(svg) {
+    width: 20px;
+    height: 20px;
+    color: var(--moss-deep);
+  }
+  .hero__stage {
+    position: relative;
+    max-width: 560px;
+    width: 100%;
+    margin-inline: auto;
+  }
+  .hero__stage :global(.plush3d) {
+    margin-top: -1rem;
+  }
+  .hero__blob {
+    position: absolute;
+    right: -10vw;
+    top: 4%;
+    width: min(760px, 95vw);
+    aspect-ratio: 1;
+    border-radius: 46% 54% 52% 48% / 55% 45% 55% 45%;
+    background: radial-gradient(circle at 40% 40%, #fff7ec 0%, var(--oat) 55%, rgba(239, 227, 212, 0) 72%);
+    animation: blob 16s ease-in-out infinite;
+  }
+  @keyframes blob {
+    50% {
+      border-radius: 54% 46% 44% 56% / 46% 56% 44% 54%;
+      transform: rotate(8deg) scale(1.04);
+    }
+  }
+  .hero__leaf,
+  .hero__heart {
+    position: absolute;
+    pointer-events: none;
+    animation: float 7s ease-in-out infinite;
+  }
+  .hero__leaf--a {
+    width: 54px;
+    right: 6%;
+    top: 12%;
+    transform: rotate(20deg);
+  }
+  .hero__leaf--b {
+    width: 40px;
+    left: 46%;
+    bottom: 10%;
+    animation-delay: -3s;
+  }
+  .hero__heart--a {
+    width: 30px;
+    right: 38%;
+    top: 16%;
+    animation-delay: -2s;
+  }
+  .hero__heart--b {
+    width: 22px;
+    right: 8%;
+    bottom: 22%;
+    animation-delay: -5s;
+  }
+  @keyframes float {
+    50% {
+      translate: 0 -14px;
+      rotate: 8deg;
+    }
+  }
+  .hero__hint {
+    position: absolute;
+    left: 0;
+    top: 12%;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.25rem;
+    margin: 0;
+    font-size: 1.35rem;
+    color: var(--ink-soft);
+    transform: rotate(-8deg);
+  }
+  .hero__hint svg {
+    width: 46px;
+    order: 2;
+    transform: scaleX(-1) rotate(-60deg);
+  }
+  .swatches {
+    border: 0;
+    padding: 0;
+    margin: -0.5rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .swatch {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.12),
+      0 4px 10px -6px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .swatch:hover {
+    transform: scale(1.12);
+  }
+  .swatch input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .swatch:has(input:checked) {
+    transform: scale(1.12);
+    box-shadow:
+      0 0 0 3px var(--cream),
+      0 0 0 5px var(--chocolate);
+  }
+  .swatch:has(input:focus-visible) {
+    outline: 3px solid var(--moss-deep);
+    outline-offset: 5px;
+  }
+  .swatches__name {
+    flex-basis: 100%;
+    text-align: center;
+    font-size: 1.4rem;
+  }
+
+  @media (max-width: 899px) {
+    .hero {
+      padding-top: 0.5rem;
+    }
+    .hero__stage {
+      order: -1;
+      max-width: 330px;
+    }
+    .hero__stage :global(.plush3d) {
+      margin-top: 0;
+    }
+    .hero__hint,
+    .hero__leaf--b {
+      display: none;
+    }
+    .swatches {
+      margin-top: -1.25rem;
+    }
+    .swatch {
+      width: 30px;
+      height: 30px;
+    }
+    .swatches__name {
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+  }
+  @media (min-width: 900px) {
+    .hero__grid {
+      grid-template-columns: 1fr 1.05fr;
+      gap: 2rem;
+      min-height: min(78vh, 760px);
+    }
+  }
+
+  /* Ribbon */
+  .ribbon {
+    overflow: hidden;
+    background: var(--moss);
+    color: #fff;
+    padding: 0.85rem 0;
+    transform: rotate(-1.2deg);
+    margin-inline: -2vw;
+  }
+  .ribbon__track {
+    display: flex;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+  }
+  .ribbon span {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    white-space: nowrap;
+  }
+  .ribbon i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ochre);
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* What is */
+  .what__grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .what__photo {
+    margin: 0;
+    position: relative;
+  }
+  .what__photo img {
+    width: 100%;
+    aspect-ratio: 4 / 3.2;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .what__photo figcaption {
+    position: absolute;
+    right: 1rem;
+    bottom: -1.1rem;
+    padding: 0.4rem 1rem;
+    background: var(--paper);
+    border-radius: 999px;
+    font-size: 1.2rem;
+    box-shadow: var(--shadow-soft);
+    transform: rotate(-2deg);
+  }
+  @media (min-width: 900px) {
+    .what__grid {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 5rem;
+    }
+  }
+
+  /* Featured */
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-bottom: clamp(1.75rem, 4vw, 3rem);
+  }
+  .section-head h2 {
+    margin: 0;
+  }
+  .section-head--center {
+    display: block;
+    text-align: center;
+  }
+  .featured__grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(78%, 320px);
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 1rem;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scrollbar-width: thin;
+  }
+  .featured__grid > :global(*) {
+    scroll-snap-align: start;
+  }
+  @media (min-width: 900px) {
+    .featured__grid {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, 1fr);
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+    }
+    .featured__grid > :global(:nth-child(even)) {
+      margin-top: 3rem;
+    }
+  }
+
+  /* Reasons */
+  .reasons {
+    background: linear-gradient(180deg, transparent, rgba(157, 183, 198, 0.16) 30%, rgba(157, 183, 198, 0.16) 70%, transparent);
+  }
+  .reasons__grid {
+    display: grid;
+    gap: 2.5rem;
+  }
+  .reasons__intro {
+    align-self: start;
+  }
+  .reasons__notes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.1rem;
+  }
+  .note {
+    --bg: var(--paper);
+    padding: 1.4rem 1.5rem 1.2rem;
+    border-radius: 6px 22px 8px 20px;
+    background: var(--bg);
+    box-shadow: var(--shadow-soft);
+    rotate: var(--rot);
+    transition: rotate 0.5s var(--ease-spring), translate 0.5s var(--ease-spring);
+  }
+  .note:hover {
+    rotate: 0deg;
+    translate: 0 -4px;
+  }
+  .note h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+  .note p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .note--sky {
+    --bg: #e3ecf1;
+  }
+  .note--ochre {
+    --bg: #f6e8c9;
+  }
+  .note--moss {
+    --bg: #e3e9dc;
+  }
+  .note--rose {
+    --bg: #f5e0dd;
+  }
+  .note--cream {
+    --bg: var(--paper);
+  }
+  @media (min-width: 640px) {
+    .reasons__notes {
+      grid-template-columns: 1fr 1fr;
+    }
+    .reasons__notes li:nth-child(even) {
+      margin-top: 1.5rem;
+    }
+  }
+  @media (min-width: 1000px) {
+    .reasons__grid {
+      grid-template-columns: 0.8fr 1.4fr;
+      gap: 4rem;
+    }
+    .reasons__intro {
+      position: sticky;
+      top: 120px;
+    }
+  }
+
+  /* Sensory */
+  .sensory {
+    background: var(--chocolate);
+    color: var(--cream);
+    padding-block: clamp(4rem, 9vw, 7rem);
+    border-radius: var(--radius-lg);
+    margin-inline: clamp(0rem, 2vw, 1.5rem);
+  }
+  .sensory h2 {
+    color: var(--cream);
+  }
+  .sensory .eyebrow {
+    color: var(--ochre);
+  }
+  .sensory p {
+    color: rgba(247, 239, 230, 0.85);
+  }
+  .sensory__grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .feels {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .feels li {
+    display: grid;
+    gap: 0.15rem;
+    padding: 1.1rem 1.3rem;
+    border-radius: var(--radius);
+    background: rgba(247, 239, 230, 0.07);
+    border: 1px solid rgba(247, 239, 230, 0.12);
+  }
+  .feels strong {
+    font-family: var(--font-hand);
+    font-weight: 400;
+    font-size: 1.7rem;
+    color: var(--cream);
+    line-height: 1.1;
+  }
+  .feels span {
+    color: rgba(247, 239, 230, 0.8);
+    font-size: 0.97rem;
+  }
+  @media (min-width: 900px) {
+    .sensory__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+    }
+    .feels li:nth-child(odd) {
+      margin-right: 2rem;
+    }
+    .feels li:nth-child(even) {
+      margin-left: 2rem;
+    }
+  }
+
+  /* Process */
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+    counter-reset: step;
+  }
+  .step {
+    position: relative;
+    padding: 1.6rem 1.5rem 1.3rem;
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px rgba(91, 64, 50, 0.07);
+  }
+  .step__num {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 0.8rem;
+    border-radius: 50%;
+    background: var(--ochre);
+    color: #fff;
+    font-size: 1.8rem;
+  }
+  .step:nth-child(2) .step__num {
+    background: var(--clay-rose);
+  }
+  .step:nth-child(3) .step__num {
+    background: var(--sky);
+  }
+  .step:nth-child(4) .step__num {
+    background: var(--moss);
+  }
+  .step p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  @media (min-width: 760px) {
+    .steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1100px) {
+    .steps {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .step:nth-child(even) {
+      translate: 0 2.5rem;
+    }
+  }
+  .drop {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 1.25rem;
+    align-items: center;
+    margin-top: clamp(3rem, 7vw, 5.5rem);
+    padding: 1.4rem 1.6rem;
+    border-radius: var(--radius-lg);
+    background: #f5e0dd;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+  .drop img {
+    width: 110px;
+    animation: float 5s ease-in-out infinite;
+  }
+  .drop h3 {
+    margin-bottom: 0.3rem;
+  }
+  .drop p:last-child {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+  .drop .eyebrow {
+    margin-bottom: 0.3rem;
+    color: var(--clay-deep);
+  }
+
+  /* FAQ */
+  .faq-home__grid {
+    display: grid;
+    gap: 2rem;
+  }
+  .faq-home__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  @media (min-width: 900px) {
+    .faq-home__grid {
+      grid-template-columns: 0.8fr 1.3fr;
+      gap: 4rem;
+    }
+  }
+</style>
+
+<script>
+  const stage = document.getElementById('hero-plush');
+  const name = document.querySelector<HTMLOutputElement>('[data-swatch-name]');
+  document.querySelectorAll<HTMLInputElement>('input[name="hero-color"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      if (!stage) return;
+      stage.dispatchEvent(new CustomEvent('plush:color', { detail: input.value }));
+      const img = stage.querySelector<HTMLImageElement>('.plush3d__fallback');
+      if (img && input.dataset.image) img.src = input.dataset.image;
+      if (name) name.value = input.parentElement?.querySelector('.visually-hidden')?.textContent || '';
+    });
+  });
+</script>

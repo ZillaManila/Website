@@ -1,0 +1,87 @@
+---
+// Live 3D Gummikins with a static image fallback.
+interface Props {
+  kind?: 'gummikin' | 'keychain' | 'nest' | 'blanket';
+  color: string;
+  image: string;
+  alt: string;
+  mode?: 'hero' | 'viewer' | 'sizes';
+  scale?: number;
+  class?: string;
+  id?: string;
+  eager?: boolean;
+}
+const { kind = 'gummikin', color, image, alt, mode = 'viewer', scale = 1, class: cls, id, eager = false } = Astro.props;
+---
+
+<div
+  class:list={['plush3d', cls]}
+  id={id}
+  data-plush3d
+  data-kind={kind}
+  data-color={color}
+  data-mode={mode}
+  data-scale={scale}
+  data-label={alt}
+>
+  <img class="plush3d__fallback" src={image} alt={alt} width="1200" height="1200" loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : 'auto'} />
+</div>
+
+<script>
+  import '../scripts/plush-viewer';
+</script>
+
+<style is:global>
+  .plush3d {
+    position: relative;
+    aspect-ratio: 1;
+    width: 100%;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .plush3d__fallback,
+  .plush3d__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .plush3d__canvas {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    cursor: grab;
+  }
+  .plush3d.is-grabbing .plush3d__canvas {
+    cursor: grabbing;
+  }
+  .plush3d.is-live .plush3d__canvas {
+    opacity: 1;
+  }
+  .plush3d.is-live .plush3d__fallback {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .plush-heart {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    pointer-events: none;
+    animation: heartPop 0.9s var(--ease-out) forwards;
+  }
+  @keyframes heartPop {
+    0% {
+      transform: translate(0, 0) scale(0.2) rotate(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--r));
+      opacity: 0;
+    }
+  }
+</style>

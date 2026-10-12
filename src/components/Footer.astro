@@ -1,0 +1,139 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import Newsletter from './Newsletter.astro';
+import { footerNav, site } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <Newsletter />
+  <div class="site-footer__main">
+    <div class="wrap site-footer__grid">
+      <div class="site-footer__brand">
+        <Logo size="lg" />
+        <p class="hand site-footer__tag">Small creatures. Big comfort.</p>
+        <p class="site-footer__about">
+          Handmade crochet plush and cozy sensory pieces, made one at a time in {site.location.split(',')[0]}.
+        </p>
+        <div class="site-footer__social">
+          <a href={site.instagramUrl} class="icon-link" target="_blank" rel="noopener">
+            <Icon name="instagram" /> @{site.instagram}
+          </a>
+          <a href={`mailto:${site.email}`} class="icon-link"><Icon name="mail" /> {site.email}</a>
+        </div>
+      </div>
+      <nav aria-label="Shop links">
+        <h3>Shop</h3>
+        <ul>{footerNav.shop.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </nav>
+      <nav aria-label="About links">
+        <h3>The world</h3>
+        <ul>{footerNav.world.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </nav>
+      <nav aria-label="Help links">
+        <h3>Help</h3>
+        <ul>{footerNav.help.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </nav>
+    </div>
+    <div class="wrap site-footer__base">
+      <p>© {year} Gummikins™. All Gummikins are handmade, so no two are exactly alike.</p>
+      <p>Secure checkout. Prices in USD.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: clamp(3rem, 8vw, 6rem);
+  }
+  .site-footer__main {
+    background: var(--chocolate);
+    color: var(--cream);
+    padding-block: clamp(3rem, 7vw, 5rem) 1.5rem;
+  }
+  .site-footer__main :global(.logo) {
+    color: var(--cream);
+    --logo-fill: var(--chocolate);
+  }
+  .site-footer__grid {
+    display: grid;
+    gap: 2.5rem 2rem;
+    grid-template-columns: 1fr 1fr;
+  }
+  .site-footer__brand {
+    grid-column: 1 / -1;
+  }
+  .site-footer__tag {
+    font-size: 1.6rem;
+    margin: 0.6rem 0 0.4rem;
+    color: var(--clay-rose);
+  }
+  .site-footer__about {
+    color: rgba(247, 239, 230, 0.78);
+    max-width: 36ch;
+  }
+  .site-footer h3 {
+    color: var(--cream);
+    font-size: 1.5rem;
+    margin-bottom: 0.6rem;
+  }
+  .site-footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .site-footer ul a {
+    display: inline-block;
+    padding: 0.3rem 0;
+    color: rgba(247, 239, 230, 0.85);
+    text-decoration: none;
+  }
+  .site-footer ul a:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+  .site-footer__social {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--cream);
+    text-decoration: none;
+    font-weight: 600;
+    width: fit-content;
+  }
+  .icon-link :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+  .site-footer__base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(247, 239, 230, 0.15);
+    font-size: 0.85rem;
+    color: rgba(247, 239, 230, 0.65);
+  }
+  .site-footer__base p {
+    margin: 0;
+    max-width: none;
+  }
+  @media (min-width: 860px) {
+    .site-footer__grid {
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    }
+    .site-footer__brand {
+      grid-column: auto;
+    }
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+// Placeholder tiles until the Instagram feed is connected.
+const tiles = [
+  { src: '/images/placeholder/moss.webp', alt: 'Three Gummikins sitting on moss' },
+  { src: '/images/products/medium-gummikins-bluebell.webp', alt: 'A blue Gummikins' },
+  { src: '/images/placeholder/tag.webp', alt: 'A Gummikins gift tag on knitted yarn' },
+  { src: '/images/products/nest-blanket-moss.webp', alt: 'A Gummikins in a green Nest Blanket' },
+  { src: '/images/products/keychain-gummikins-honey.webp', alt: 'A yellow Gummikins keychain' },
+  { src: '/images/placeholder/note.webp', alt: 'A handwritten note reading More kindness in a softer world' },
+];
+---
+
+<section class="section ig" aria-labelledby="ig-title">
+  <div class="wrap">
+    <div class="ig__head">
+      <div>
+        <p class="eyebrow"><Icon name="instagram" class="ig__ico" /> Follow along</p>
+        <h2 id="ig-title">@{site.instagram}</h2>
+      </div>
+      <a href={site.instagramUrl} class="btn btn--ghost" target="_blank" rel="noopener">Visit us on Instagram <Icon name="arrow" /></a>
+    </div>
+    <ul class="ig__grid">
+      {
+        tiles.map((t, i) => (
+          <li class="reveal" style={`--i:${i % 3}`}>
+            <a href={site.instagramUrl} target="_blank" rel="noopener" aria-label={`${t.alt} (opens Instagram)`}>
+              <img src={t.src} alt={t.alt} loading="lazy" width="600" height="600" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .ig__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .ig__head h2 {
+    margin: 0;
+  }
+  :global(.ig__ico) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .ig__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  @media (min-width: 760px) {
+    .ig__grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .ig__grid li:nth-child(odd) {
+      translate: 0 1rem;
+    }
+  }
+  .ig__grid a {
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--paper);
+  }
+  .ig__grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .ig__grid a:hover img {
+    transform: scale(1.06);
+  }
+</style>

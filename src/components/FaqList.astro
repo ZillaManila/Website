@@ -1,0 +1,68 @@
+---
+interface Props {
+  items: { q: string; a: string; id?: string }[];
+}
+const { items } = Astro.props;
+---
+
+<div class="faqs">
+  {
+    items.map((f) => (
+      <details class="faq" id={f.id}>
+        <summary>
+          <span>{f.q}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </summary>
+        <div class="faq__a" set:html={f.a} />
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faqs {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .faq {
+    border-radius: var(--radius);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px rgba(91, 64, 50, 0.08);
+    transition: background-color 0.3s;
+  }
+  .faq[open] {
+    background: #fff9f2;
+  }
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.3rem;
+    cursor: pointer;
+    font-weight: 650;
+    list-style: none;
+    min-height: 56px;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary svg {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    transition: transform 0.4s var(--ease-spring);
+  }
+  .faq[open] summary svg {
+    transform: rotate(45deg);
+  }
+  .faq__a {
+    padding: 0 1.3rem 1.2rem;
+    color: var(--ink-soft);
+  }
+  .faq__a :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

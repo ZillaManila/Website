@@ -1,0 +1,116 @@
+---
+import { testimonials } from '../data/site';
+---
+
+<section class="section kind" aria-labelledby="kind-title">
+  <div class="wrap">
+    <div class="kind__head">
+      <p class="eyebrow">Kind words</p>
+      <h2 id="kind-title">Notes from Gummikins homes</h2>
+    </div>
+    <ul class="kind__wall">
+      {
+        testimonials.map((t, i) => (
+          <li class={`kind__note kind__note--${t.tint} reveal`} style={`--i:${i % 3}; --rot:${[-2.5, 1.8, -1.2, 2.2, -1.6, 1.4][i]}deg`}>
+            <span class="kind__pin" aria-hidden="true" />
+            <blockquote>
+              <p>“{t.quote}”</p>
+            </blockquote>
+            <p class="kind__who">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12.5 4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              {t.who}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .kind__head {
+    text-align: center;
+    margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+  .kind__head h2 {
+    margin-inline: auto;
+  }
+  .kind__wall {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 1;
+    column-gap: 1.5rem;
+  }
+  @media (min-width: 640px) {
+    .kind__wall {
+      columns: 2;
+    }
+  }
+  @media (min-width: 1000px) {
+    .kind__wall {
+      columns: 3;
+    }
+  }
+  .kind__note {
+    --bg: var(--paper);
+    position: relative;
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+    padding: 2rem 1.6rem 1.3rem;
+    background: var(--bg);
+    border-radius: 4px 4px 18px 4px;
+    box-shadow: var(--shadow-soft);
+    rotate: var(--rot);
+  }
+  .kind__note--rose {
+    --bg: #f5e0dd;
+  }
+  .kind__note--sky {
+    --bg: #e3ecf1;
+  }
+  .kind__note--ochre {
+    --bg: #f6e8c9;
+  }
+  .kind__note--moss {
+    --bg: #e3e9dc;
+  }
+  .kind__pin {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #e9a8a3, var(--clay-deep));
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+  }
+  blockquote {
+    margin: 0;
+  }
+  blockquote p {
+    font-family: var(--font-hand);
+    font-size: 1.65rem;
+    line-height: 1.2;
+    color: var(--chocolate-deep);
+    margin: 0 0 0.75rem;
+  }
+  .kind__who {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--moss-deep);
+  }
+  .kind__who svg {
+    width: 16px;
+    height: 16px;
+  }
+</style>

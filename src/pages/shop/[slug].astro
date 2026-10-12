@@ -1,0 +1,835 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Plush3D from '../../components/Plush3D.astro';
+import Icon from '../../components/Icon.astro';
+import { getProducts, colorStatus, leadColor, usd, type Product } from '../../lib/products';
+import { site } from '../../data/site';
+
+export async function getStaticPaths() {
+  const products = await getProducts();
+  return products.map((p) => ({ params: { slug: p.id }, props: { product: p, all: products } }));
+}
+
+interface Props {
+  product: Product;
+  all: Product[];
+}
+const { product, all } = Astro.props;
+const d = product.data;
+const { Content } = await render(product);
+const lead = leadColor(product);
+const leadIndex = d.colors.indexOf(lead);
+const option0 = d.options?.[0];
+const price = option0?.price ?? d.price;
+const shipping = option0?.shipping ?? d.shipping;
+const related = all.filter((p) => p.id !== product.id && !p.data.specialOrder).slice(0, 4);
+const feelRows = [
+  { label: 'Softness', value: d.feel.softness, low: 'Firm', high: 'Cloud soft' },
+  { label: 'Squish', value: d.feel.squish, low: 'Holds shape', high: 'Very squishy' },
+  { label: 'Weight', value: d.feel.weight, low: 'Feather light', high: 'Settled & heavy' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: `${d.name} | Gummikins`,
+  description: d.tagline,
+  image: d.colors.map((c) => new URL(c.image, Astro.site).toString()),
+  brand: { '@type': 'Brand', name: 'Gummikins' },
+  material: d.materials.join(', '),
+  offers: d.colors.map((c) => ({
+    '@type': 'Offer',
+    name: c.name,
+    price: d.price,
+    priceCurrency: 'USD',
+    availability: d.specialOrder ? 'https://schema.org/PreOrder' : c.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+    url: new URL(`/shop/${product.id}`, Astro.site).toString(),
+  })),
+};
+---
+
+<Base title={d.name} description={`${d.tagline} Handmade crochet, ${d.sizeLabel.toLowerCase()}. ${usd(price)}.`} image={lead.image} type="product">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <nav class="wrap crumbs" aria-label="Breadcrumb">
+    <a href="/shop">Shop</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{d.name}</span>
+  </nav>
+
+  <section class="wrap pdp" data-product data-slug={product.id} data-name={d.name}>
+    <div class="pdp__media">
+      <div class="pdp__stage" style={`--tint:${lead.hex}`}>
+        <img class="pdp__main" data-main src={lead.image} alt={`${d.name} in ${lead.name}`} width="1200" height="1200" fetchpriority="high" />
+        <div class="pdp__3d" data-3d-wrap hidden>
+          <Plush3D id="pdp-plush" kind={d.kind} color={lead.hex} image={lead.image} alt={`3D view of ${d.name}. Drag to spin, tap to squish.`} />
+        </div>
+        <button type="button" class="pdp__spin" data-3d-toggle aria-pressed="false">
+          <Icon name="spin" /> <span data-3d-label>Spin &amp; squish in 3D</span>
+        </button>
+      </div>
+      <ul class="pdp__thumbs" aria-label="More photos">
+        {
+          [lead.image, ...d.gallery].map((src, i) => (
+            <li>
+              <button type="button" data-thumb={src} aria-label={`Show photo ${i + 1}`} aria-current={i === 0 ? 'true' : undefined}>
+                <img src={src} alt="" width="160" height="160" loading="lazy" />
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="pdp__handmade"><Icon name="hand" /> Handmade, so yours may vary slightly from the photos. That’s part of the charm.</p>
+    </div>
+
+    <div class="pdp__info">
+      <p class="eyebrow">{d.sizeLabel}</p>
+      <h1>{d.name}</h1>
+      <p class="pdp__tagline">{d.tagline}</p>
+      <p class="pdp__price">
+        <span data-price>{d.priceFrom ? `From ${usd(price)}` : usd(price)}</span>
+        {!d.specialOrder && <span class="pdp__ship" data-shipping>+ {usd(shipping ?? 0)} shipping</span>}
+      </p>
+
+      <form class="buy" data-buy>
+        {
+          !d.specialOrder && (
+            <fieldset class="buy__group">
+              <legend>
+                Color: <strong data-color-name>{lead.name}</strong>
+                <span class="buy__stock" data-stock>{colorStatus(lead.stock)}</span>
+              </legend>
+              <div class="buy__colors">
+                {d.colors.map((c, i) => (
+                  <label class:list={['buy__swatch', { 'is-out': c.stock === 0 }]} style={`--c:${c.hex}`} title={`${c.name}: ${colorStatus(c.stock)}`}>
+                    <input
+                      type="radio"
+                      name="color"
+                      value={c.key}
+                      checked={i === leadIndex}
+                      data-name={c.name}
+                      data-hex={c.hex}
+                      data-image={c.image}
+                      data-stock={c.stock}
+                    />
+                    <span class="visually-hidden">
+                      {c.name}, {colorStatus(c.stock)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )
+        }
+
+        {
+          d.options && (
+            <fieldset class="buy__group">
+              <legend>Size</legend>
+              <div class="buy__options">
+                {d.options.map((o, i) => (
+                  <label class="buy__option">
+                    <input type="radio" name="option" value={o.label} data-price={o.price} data-shipping={o.shipping} checked={i === 0} />
+                    <span>
+                      {o.label}
+                      <strong>{usd(o.price)}</strong>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )
+        }
+
+        {
+          d.specialOrder ? (
+            <div class="buy__actions">
+              <a href={`/custom?item=${product.id}`} class="btn btn--block">
+                Request a Giant Gummikins <Icon name="arrow" />
+              </a>
+              <p class="buy__note">Made to order. We’ll confirm color, timing, and final price with you before anything is charged.</p>
+            </div>
+          ) : (
+            <div class="buy__actions">
+              <div class="qty buy__qty">
+                <button type="button" data-qty="-1" aria-label="Decrease quantity">&minus;</button>
+                <span data-qty-value aria-live="polite">1</span>
+                <button type="button" data-qty="1" aria-label="Increase quantity">+</button>
+              </div>
+              <button type="submit" class="btn buy__add" data-add>
+                <Icon name="bag" /> <span data-add-label>Add to basket</span>
+              </button>
+              <p class="buy__soldout" data-soldout hidden>
+                This color has found its homes for now. <a href="#newsletter-title">Join the list</a> to hear when it’s back.
+              </p>
+            </div>
+          )
+        }
+      </form>
+
+      <ul class="pdp__perks">
+        <li><Icon name="truck" /> {d.specialOrder ? 'Made to order, timing confirmed with you' : `Ships in ${site.turnaround}`}</li>
+        <li><Icon name="heart" /> Free Little Drop in every order, as supplies last</li>
+        <li><Icon name="sparkle" /> Handmade one at a time</li>
+      </ul>
+
+      <section class="feel" aria-labelledby="feel-title">
+        <h2 id="feel-title">How it feels</h2>
+        <dl class="feel__rows">
+          {
+            feelRows.map((r) => (
+              <div class="feel__row">
+                <dt>{r.label}</dt>
+                <dd>
+                  <span class="feel__meter" role="img" aria-label={`${r.label}: ${r.value} out of 5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <span class:list={{ on: n <= r.value }} />
+                    ))}
+                  </span>
+                  <span class="feel__ends">
+                    <span>{r.low}</span>
+                    <span>{r.high}</span>
+                  </span>
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p><strong>Texture.</strong> {d.feel.texture}</p>
+        <p><strong>In your hands.</strong> {d.feel.notes}</p>
+      </section>
+
+      <div class="pdp__desc prose">
+        <Content />
+      </div>
+
+      <div class="pdp__more">
+        <details>
+          <summary>Materials <Icon name="plus" /></summary>
+          <ul>{d.materials.map((m) => <li>{m}</li>)}</ul>
+        </details>
+        <details>
+          <summary>Care <Icon name="plus" /></summary>
+          <p>{d.care}</p>
+        </details>
+        <details>
+          <summary>Shipping &amp; returns <Icon name="plus" /></summary>
+          <p>
+            {d.specialOrder
+              ? 'Special orders ship once finished, at a flat rate of $15.95 within the US. Special orders are final sale.'
+              : `Ships within the US for a flat ${usd(shipping ?? 0)} when ordered on its own. Orders with more than one item are calculated at checkout. Unused items can be returned within 14 days.`}{' '}
+            <a href="/policies/shipping">Shipping policy</a> · <a href="/policies/returns">Returns</a>
+          </p>
+        </details>
+        <details>
+          <summary>A note on handmade <Icon name="plus" /></summary>
+          <p>Every Gummikins is crocheted by hand, so the size, shape, and smile of yours may differ a little from the photos. No two are exactly alike.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap related" aria-labelledby="related-title">
+    <h2 id="related-title">You might also love</h2>
+    <div class="related__grid">
+      {related.map((p, i) => <ProductCard product={p} index={i} />)}
+    </div>
+  </section>
+
+  <div class="sticky-buy" data-sticky-buy hidden>
+    <div>
+      <p class="sticky-buy__name">{d.name}</p>
+      <p class="sticky-buy__price" data-sticky-price>{d.priceFrom ? `From ${usd(price)}` : usd(price)}</p>
+    </div>
+    {
+      d.specialOrder ? (
+        <a href={`/custom?item=${product.id}`} class="btn">Request</a>
+      ) : (
+        <button type="button" class="btn" data-sticky-add>Add to basket</button>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .crumbs {
+    display: flex;
+    gap: 0.5rem;
+    padding-block: 1.25rem 0.5rem;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+  .crumbs a {
+    color: inherit;
+  }
+  .pdp {
+    display: grid;
+    gap: 2rem;
+    padding-bottom: clamp(3rem, 8vw, 6rem);
+  }
+  @media (min-width: 960px) {
+    .pdp {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    .pdp__media {
+      position: sticky;
+      top: 90px;
+    }
+  }
+  .pdp__stage {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--tint) 18%, transparent), transparent 62%),
+      var(--paper);
+    overflow: hidden;
+    transition: background 0.6s;
+  }
+  .pdp__main {
+    position: absolute;
+    inset: 3%;
+    width: 94%;
+    height: 94%;
+    object-fit: contain;
+    transition: opacity 0.3s;
+  }
+  .pdp__main.is-swapping {
+    opacity: 0;
+  }
+  .pdp__3d {
+    position: absolute;
+    inset: 0;
+  }
+  .pdp__3d :global(.plush3d) {
+    height: 100%;
+  }
+  .pdp__spin {
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    translate: -50% 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.5rem 1.1rem;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--chocolate) 88%, transparent);
+    color: var(--cream);
+    font: 600 0.9rem var(--font-body);
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s var(--ease-spring);
+  }
+  .pdp__spin:hover {
+    transform: scale(1.04);
+  }
+  .pdp__spin :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+  .pdp__thumbs {
+    display: flex;
+    gap: 0.6rem;
+    list-style: none;
+    padding: 0;
+    margin: 0.8rem 0 0;
+  }
+  .pdp__thumbs button {
+    width: 76px;
+    height: 76px;
+    padding: 4px;
+    border-radius: 18px;
+    border: 2px solid transparent;
+    background: var(--paper);
+    cursor: pointer;
+  }
+  .pdp__thumbs button[aria-current='true'] {
+    border-color: var(--chocolate);
+  }
+  .pdp__thumbs img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .pdp__handmade {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .pdp__handmade :global(svg) {
+    width: 20px;
+    height: 20px;
+    flex: none;
+  }
+  .pdp__info h1 {
+    font-size: clamp(2.6rem, 6vw, 3.8rem);
+    margin-bottom: 0.2rem;
+  }
+  .pdp__info .eyebrow {
+    margin-bottom: 0.4rem;
+  }
+  .pdp__tagline {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+  }
+  .pdp__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0 1.5rem;
+  }
+  .pdp__ship {
+    font-size: 0.95rem;
+    font-weight: 550;
+    color: var(--ink-soft);
+  }
+  .buy__group {
+    border: 0;
+    padding: 0;
+    margin: 0 0 1.4rem;
+  }
+  .buy__group legend {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+    padding: 0;
+  }
+  .buy__stock {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.25em 0.7em;
+    border-radius: 999px;
+    background: rgba(140, 159, 122, 0.2);
+    color: var(--moss-deep);
+  }
+  .buy__stock.is-low {
+    background: rgba(212, 166, 79, 0.22);
+    color: #8a6420;
+  }
+  .buy__stock.is-out {
+    background: rgba(91, 64, 50, 0.1);
+    color: var(--ink-soft);
+  }
+  .buy__colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+  .buy__swatch {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .buy__swatch input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .buy__swatch:hover {
+    transform: scale(1.08);
+  }
+  .buy__swatch:has(input:checked) {
+    box-shadow:
+      0 0 0 3px var(--cream),
+      0 0 0 5px var(--chocolate);
+  }
+  .buy__swatch:has(input:focus-visible) {
+    outline: 3px solid var(--moss-deep);
+    outline-offset: 6px;
+  }
+  .buy__swatch.is-out::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 50%;
+    height: 2px;
+    background: var(--chocolate);
+    transform: rotate(-45deg);
+  }
+  .buy__swatch.is-out {
+    opacity: 0.55;
+  }
+  .buy__options {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .buy__option {
+    position: relative;
+  }
+  .buy__option input {
+    position: absolute;
+    opacity: 0;
+  }
+  .buy__option span {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid rgba(91, 64, 50, 0.15);
+    background: var(--paper);
+    cursor: pointer;
+  }
+  .buy__option input:checked + span {
+    border-color: var(--chocolate);
+    background: #fff9f2;
+  }
+  .buy__option input:focus-visible + span {
+    outline: 3px solid var(--moss-deep);
+    outline-offset: 2px;
+  }
+  .buy__actions {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .buy__actions > .btn--block,
+  .buy__note,
+  .buy__soldout {
+    grid-column: 1 / -1;
+  }
+  .buy__qty {
+    height: 52px;
+  }
+  .buy__qty button {
+    width: 44px;
+    height: 48px;
+  }
+  .buy__add.is-added {
+    --bg: var(--moss-deep);
+  }
+  .buy__note,
+  .buy__soldout {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  .pdp__perks {
+    list-style: none;
+    padding: 1.2rem 0;
+    margin: 1.5rem 0;
+    display: grid;
+    gap: 0.6rem;
+    border-block: 1px dashed rgba(91, 64, 50, 0.2);
+    font-size: 0.95rem;
+  }
+  .pdp__perks li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+  }
+  .pdp__perks :global(svg) {
+    width: 22px;
+    height: 22px;
+    color: var(--moss-deep);
+    flex: none;
+  }
+  .feel {
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    background: #e3e9dc;
+    margin-bottom: 1.5rem;
+  }
+  .feel h2 {
+    font-size: 2rem;
+  }
+  .feel__rows {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0 0 1.2rem;
+  }
+  .feel__row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 1rem;
+    align-items: center;
+  }
+  .feel__row dt {
+    font-weight: 650;
+    font-size: 0.92rem;
+  }
+  .feel__row dd {
+    margin: 0;
+  }
+  .feel__meter {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  .feel__meter span {
+    height: 10px;
+    border-radius: 99px;
+    background: rgba(94, 113, 80, 0.2);
+  }
+  .feel__meter span.on {
+    background: var(--moss-deep);
+  }
+  .feel__ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    margin-top: 0.2rem;
+  }
+  .feel p {
+    font-size: 0.97rem;
+  }
+  .feel p:last-child {
+    margin-bottom: 0;
+  }
+  .pdp__more details {
+    border-bottom: 1px solid rgba(91, 64, 50, 0.12);
+  }
+  .pdp__more summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 56px;
+    font-weight: 650;
+    cursor: pointer;
+    list-style: none;
+  }
+  .pdp__more summary::-webkit-details-marker {
+    display: none;
+  }
+  .pdp__more summary :global(svg) {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.4s var(--ease-spring);
+  }
+  .pdp__more details[open] summary :global(svg) {
+    transform: rotate(45deg);
+  }
+  .pdp__more details > :not(summary) {
+    color: var(--ink-soft);
+    margin-top: 0;
+  }
+  .related h2 {
+    margin-bottom: 1.5rem;
+  }
+  .related__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+    gap: 2rem 1.25rem;
+  }
+  .sticky-buy {
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0.6rem 0.6rem 1.2rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+    animation: up 0.5s var(--ease-spring);
+  }
+  .sticky-buy p {
+    margin: 0;
+    line-height: 1.2;
+  }
+  .sticky-buy__name {
+    font-weight: 650;
+    font-size: 0.9rem;
+  }
+  .sticky-buy__price {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  @keyframes up {
+    from {
+      transform: translateY(120%);
+    }
+  }
+  @media (min-width: 960px) {
+    .sticky-buy {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { cart, money } from '../../scripts/cart';
+
+  const root = document.querySelector<HTMLElement>('[data-product]')!;
+  const form = document.querySelector<HTMLFormElement>('[data-buy]')!;
+  const main = document.querySelector<HTMLImageElement>('[data-main]')!;
+  const stage = document.querySelector<HTMLElement>('.pdp__stage')!;
+  const plush = document.getElementById('pdp-plush');
+  const wrap3d = document.querySelector<HTMLElement>('[data-3d-wrap]')!;
+  const toggle3d = document.querySelector<HTMLButtonElement>('[data-3d-toggle]')!;
+  const thumbs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-thumb]'));
+  const addBtn = document.querySelector<HTMLButtonElement>('[data-add]');
+  const addLabel = document.querySelector<HTMLElement>('[data-add-label]');
+  const soldout = document.querySelector<HTMLElement>('[data-soldout]');
+  const qtyEl = document.querySelector<HTMLElement>('[data-qty-value]');
+  let qty = 1;
+
+  const color = () => form.querySelector<HTMLInputElement>('input[name="color"]:checked');
+  const option = () => form.querySelector<HTMLInputElement>('input[name="option"]:checked');
+
+  function showImage(src: string) {
+    main.classList.add('is-swapping');
+    const img = new Image();
+    img.onload = img.onerror = () => {
+      main.src = src;
+      main.classList.remove('is-swapping');
+    };
+    img.src = src;
+    thumbs.forEach((t) => t.setAttribute('aria-current', String(t.dataset.thumb === src)));
+  }
+
+  function set3d(on: boolean) {
+    wrap3d.hidden = !on;
+    main.hidden = on;
+    toggle3d.setAttribute('aria-pressed', String(on));
+    toggle3d.querySelector('[data-3d-label]')!.textContent = on ? 'Back to photos' : 'Spin & squish in 3D';
+  }
+  toggle3d.addEventListener('click', () => set3d(wrap3d.hidden));
+
+  thumbs.forEach((t) =>
+    t.addEventListener('click', () => {
+      set3d(false);
+      showImage(t.dataset.thumb!);
+    })
+  );
+
+  function stockOf(input: HTMLInputElement | null) {
+    return input ? Number(input.dataset.stock) : 0;
+  }
+
+  function syncColor() {
+    const c = color();
+    if (!c) return;
+    document.querySelector('[data-color-name]')!.textContent = c.dataset.name || '';
+    const stock = stockOf(c);
+    const badge = document.querySelector<HTMLElement>('[data-stock]')!;
+    badge.textContent = stock === 0 ? 'Sold out' : stock === 1 ? 'Last one' : stock <= 3 ? `${stock} left` : 'In stock';
+    badge.className = `buy__stock ${stock === 0 ? 'is-out' : stock <= 3 ? 'is-low' : ''}`;
+    stage.style.setProperty('--tint', c.dataset.hex || '');
+    if (thumbs[0]) thumbs[0].dataset.thumb = c.dataset.image;
+    const thumbImg = thumbs[0]?.querySelector('img');
+    if (thumbImg && c.dataset.image) thumbImg.src = c.dataset.image;
+    if (!main.hidden) showImage(c.dataset.image!);
+    plush?.dispatchEvent(new CustomEvent('plush:color', { detail: c.dataset.hex }));
+    qty = Math.min(Math.max(1, qty), Math.max(1, stock));
+    syncButtons();
+  }
+
+  function syncButtons() {
+    const stock = stockOf(color());
+    if (qtyEl) qtyEl.textContent = String(qty);
+    form.querySelector<HTMLButtonElement>('[data-qty="1"]')?.toggleAttribute('disabled', qty >= stock);
+    form.querySelector<HTMLButtonElement>('[data-qty="-1"]')?.toggleAttribute('disabled', qty <= 1);
+    if (addBtn) {
+      addBtn.disabled = stock === 0;
+      if (addLabel) addLabel.textContent = stock === 0 ? 'Sold out' : 'Add to basket';
+    }
+    if (soldout) soldout.hidden = stock !== 0;
+  }
+
+  function syncOption() {
+    const o = option();
+    if (!o) return;
+    const price = money(Number(o.dataset.price)).replace('.00', '');
+    document.querySelector('[data-price]')!.textContent = price;
+    document.querySelector('[data-sticky-price]')!.textContent = price;
+    const ship = document.querySelector('[data-shipping]');
+    if (ship) ship.textContent = `+ ${money(Number(o.dataset.shipping))} shipping`;
+  }
+
+  form.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'color') syncColor();
+    if (t.name === 'option') syncOption();
+  });
+
+  form.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-qty]');
+    if (!b) return;
+    qty = Math.max(1, Math.min(stockOf(color()), qty + Number(b.dataset.qty)));
+    syncButtons();
+  });
+
+  function addToCart() {
+    const c = color();
+    if (!c || stockOf(c) === 0) return;
+    const o = option();
+    const priceText = document.querySelector('[data-price]')!.textContent || '';
+    const price = o ? Number(o.dataset.price) : Number(priceText.replace(/[^0-9.]/g, ''));
+    const shipText = document.querySelector('[data-shipping]')?.textContent || '';
+    const shipping = Number(shipText.replace(/[^0-9.]/g, ''));
+    const variant = [c.dataset.name, o?.value].filter(Boolean).join(' · ');
+    cart.add(
+      {
+        id: `${root.dataset.slug}:${c.value}:${o?.value || ''}`,
+        slug: root.dataset.slug!,
+        name: root.dataset.name!,
+        variant,
+        price,
+        shipping,
+        image: c.dataset.image!,
+        max: stockOf(c),
+      },
+      qty
+    );
+    if (addBtn && addLabel) {
+      addBtn.classList.add('is-added');
+      addLabel.textContent = 'Added!';
+      setTimeout(() => {
+        addBtn.classList.remove('is-added');
+        syncButtons();
+      }, 1400);
+    }
+    plush?.dispatchEvent(new CustomEvent('plush:color', { detail: c.dataset.hex }));
+    window.dispatchEvent(new CustomEvent('cart:open'));
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    addToCart();
+  });
+  document.querySelector('[data-sticky-add]')?.addEventListener('click', addToCart);
+
+  // Show the compact buy bar on phones once the main button scrolls away.
+  const sticky = document.querySelector<HTMLElement>('[data-sticky-buy]');
+  const anchor = form.querySelector('.buy__actions');
+  if (sticky && anchor) {
+    new IntersectionObserver(([e]) => {
+      sticky.hidden = e.isIntersecting || e.boundingClientRect.top > 0;
+    }).observe(anchor);
+  }
+
+  syncColor();
+  syncOption();
+</script>

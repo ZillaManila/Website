@@ -1,0 +1,75 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+// Placeholder gallery. Replace with real photos in public/images/gallery.
+const photos = [
+  { src: '/images/placeholder/moss.webp', alt: 'Three Gummikins on moss among tiny mushrooms', wide: true },
+  { src: '/images/products/medium-gummikins-cocoa.webp', alt: 'A cocoa-brown Gummikins' },
+  { src: '/images/products/nest-blanket-rosebud.webp', alt: 'A Gummikins resting in a pink Nest Blanket' },
+  { src: '/images/placeholder/tag.webp', alt: 'A kraft paper Gummikins tag on pink and blue knit', wide: true },
+  { src: '/images/products/keychain-gummikins-bluebell.webp', alt: 'A blue Gummikins keychain' },
+  { src: '/images/products/family.webp', alt: 'A family of Gummikins in four colors and sizes', wide: true },
+  { src: '/images/products/small-gummikins-oatmeal.webp', alt: 'An oatmeal Small Gummikins' },
+  { src: '/images/products/little-drop.webp', alt: 'A tiny pink Little Drop' },
+  { src: '/images/placeholder/note.webp', alt: 'A handwritten card: More kindness in a softer world' },
+  { src: '/images/products/texture-square-honey.webp', alt: 'A folded honey-yellow Texture Square' },
+  { src: '/images/products/large-gummikins-bluebell.webp', alt: 'A Large bluebell Gummikins' },
+];
+---
+
+<Base title="Gallery" description="Gummikins™ out in the world: handmade crochet plush at home, on adventures, and in the arms of the people who love them.">
+  <section class="wrap page-head">
+    <p class="eyebrow">Gallery</p>
+    <h1>Gummikins in the wild</h1>
+    <p>Little creatures, out and about. Share yours with <strong>#gummikins</strong> or tag <a href={site.instagramUrl} target="_blank" rel="noopener">@{site.instagram}</a>.</p>
+  </section>
+  <section class="wrap">
+    <ul class="masonry">
+      {
+        photos.map((p, i) => (
+          <li class:list={['reveal', { wide: p.wide }]} style={`--i:${i % 3}`}>
+            <img src={p.src} alt={p.alt} loading="lazy" width="1200" height="1200" />
+          </li>
+        ))
+      }
+    </ul>
+    <p class="gallery-cta">
+      <a class="btn btn--ghost" href={site.instagramUrl} target="_blank" rel="noopener"><Icon name="instagram" /> See more on Instagram</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .masonry {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    columns: 2 170px;
+    column-gap: 1rem;
+  }
+  .masonry li {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .masonry img {
+    width: 100%;
+    transition: transform 0.7s var(--ease-out);
+  }
+  .masonry li:hover img {
+    transform: scale(1.04);
+  }
+  @media (min-width: 900px) {
+    .masonry {
+      columns: 3;
+      column-gap: 1.25rem;
+    }
+  }
+  .gallery-cta {
+    text-align: center;
+    margin: 2.5rem auto 0;
+  }
+</style>

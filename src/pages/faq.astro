@@ -1,0 +1,88 @@
+---
+import Base from '../layouts/Base.astro';
+import FaqList from '../components/FaqList.astro';
+import { faqs } from '../data/faq';
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.flatMap((g) =>
+    g.items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') } }))
+  ),
+};
+---
+
+<Base title="FAQ" description="Answers about Gummikins™ shipping, care, materials, sensory features, handmade variations, returns, gifts, and special orders.">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+  <section class="wrap page-head">
+    <p class="eyebrow">Help</p>
+    <h1>Frequently asked questions</h1>
+    <p>Can’t find what you need? <a href="/contact">Send us a note</a> and a real person will answer.</p>
+  </section>
+  <div class="wrap faq-page">
+    <nav class="faq-page__nav" aria-label="FAQ topics">
+      <ul>{faqs.map((g) => <li><a href={`#${slug(g.group)}`}>{g.group}</a></li>)}</ul>
+    </nav>
+    <div class="faq-page__groups">
+      {
+        faqs.map((g) => (
+          <section id={slug(g.group)} aria-labelledby={`${slug(g.group)}-h`}>
+            <h2 id={`${slug(g.group)}-h`}>{g.group}</h2>
+            <FaqList items={g.items} />
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</Base>
+
+<style>
+  .faq-page {
+    display: grid;
+    gap: 2rem;
+  }
+  .faq-page__nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .faq-page__nav a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: var(--paper);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .faq-page__groups {
+    display: grid;
+    gap: 2.5rem;
+  }
+  .faq-page__groups section {
+    scroll-margin-top: 90px;
+  }
+  .faq-page__groups h2 {
+    font-size: 2rem;
+  }
+  @media (min-width: 960px) {
+    .faq-page {
+      grid-template-columns: 240px 1fr;
+      gap: 4rem;
+    }
+    .faq-page__nav ul {
+      position: sticky;
+      top: 100px;
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script>
+  // Open a question linked by #id (e.g. /faq#little-drop).
+  const target = location.hash && document.querySelector<HTMLDetailsElement>(`details${location.hash}`);
+  if (target) target.open = true;
+</script>

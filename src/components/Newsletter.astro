@@ -1,0 +1,70 @@
+---
+import Icon from './Icon.astro';
+---
+
+<section class="newsletter" aria-labelledby="newsletter-title">
+  <div class="wrap newsletter__inner">
+    <div>
+      <p class="eyebrow"><Icon name="mail" class="newsletter__ico" /> Letters from the burrow</p>
+      <h2 id="newsletter-title">Be first to know when new Gummikins hatch.</h2>
+      <p class="newsletter__copy">
+        Small batches sell out quickly. Join the list for new colors, restocks, and the occasional behind-the-scenes peek. A
+        few letters a month, never more.
+      </p>
+    </div>
+    <form class="newsletter__form" data-demo-form novalidate>
+      <div class="form-body">
+        <div class="field">
+          <label for="nl-email">Email address</label>
+          <div class="newsletter__row">
+            <input id="nl-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <button class="btn" type="submit">Join the list</button>
+          </div>
+          <p class="error" data-error aria-live="polite"></p>
+          <p class="hint">Unsubscribe anytime. We never share your email.</p>
+        </div>
+      </div>
+      <p class="form-success" role="status">
+        Thank you! Keep an eye on your inbox for a little hello from the Gummikins.
+      </p>
+    </form>
+  </div>
+</section>
+
+<style>
+  .newsletter {
+    padding-block: clamp(3.5rem, 8vw, 5.5rem);
+    background: var(--oat);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .newsletter__inner {
+    display: grid;
+    gap: 2rem;
+    align-items: end;
+  }
+  .newsletter h2 {
+    max-width: 16ch;
+  }
+  .newsletter__copy {
+    color: var(--ink-soft);
+  }
+  :global(.newsletter__ico) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .newsletter__row {
+    display: grid;
+    gap: 0.6rem;
+  }
+  @media (min-width: 560px) {
+    .newsletter__row {
+      grid-template-columns: 1fr auto;
+    }
+  }
+  @media (min-width: 900px) {
+    .newsletter__inner {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 4rem;
+    }
+  }
+</style>

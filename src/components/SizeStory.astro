@@ -1,0 +1,234 @@
+---
+import Plush3D from './Plush3D.astro';
+import { sizes } from '../data/site';
+import { YARN } from '../scripts/gummikin3d.js';
+const colors = [YARN.honey, YARN.bluebell, YARN.moss, YARN.cherry, YARN.cocoa];
+---
+
+<section class="sizes" id="sizes" aria-labelledby="sizes-title">
+  <div class="wrap sizes__head">
+    <p class="eyebrow">Find your size</p>
+    <h2 id="sizes-title">From pocket-sized to pillow-sized</h2>
+    <p class="lede">Scroll to watch a Gummikins grow. Every size is the same soft friend, just more of it to hold.</p>
+  </div>
+  <div class="wrap sizes__grid">
+    <div class="sizes__stage">
+      <div class="sizes__stage-inner">
+        <Plush3D id="size-plush" mode="sizes" color={colors[0]} scale={sizes[0].scale} image="/images/products/hero-honey.webp" alt="A Gummikins that grows as you scroll through the sizes" />
+        <div class="sizes__readout" aria-hidden="true">
+          <span class="sizes__readout-name hand" data-size-name>{sizes[0].name}</span>
+          <span class="sizes__readout-in" data-size-in>{sizes[0].inches}</span>
+        </div>
+        <div class="sizes__ruler" aria-hidden="true">
+          <span class="sizes__ruler-fill" data-size-bar></span>
+        </div>
+      </div>
+    </div>
+    <ol class="sizes__steps">
+      {
+        sizes.map((s, i) => (
+          <li class="sizes__step" data-size-step={i} data-scale={s.scale} data-color={colors[i]}>
+            <div class="sizes__card">
+              <p class="sizes__inches">{s.inches}</p>
+              <h3>{s.name}</h3>
+              <p>{s.note}.</p>
+              <p class="sizes__price">
+                {s.special ? `From $${s.price}` : `$${s.price}`}
+                {s.special && <span class="badge badge--special">Special order</span>}
+              </p>
+              <a href={s.special ? '/custom' : `/shop/${s.key}-gummikins`} class="btn btn--ghost">
+                {s.special ? 'Ask about a Giant' : `Shop ${s.name}`}
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .sizes {
+    padding-block: clamp(4rem, 9vw, 7rem) 2rem;
+  }
+  .sizes__head {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .sizes__head h2,
+  .sizes__head p {
+    margin-inline: auto;
+  }
+  .sizes__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sizes__stage {
+    position: sticky;
+    top: 68px;
+    z-index: 1;
+    height: 46vh;
+    pointer-events: none;
+  }
+  .sizes__stage-inner {
+    position: relative;
+    height: 100%;
+    display: grid;
+    justify-items: center;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    background: linear-gradient(180deg, var(--cream) 82%, rgba(247, 239, 230, 0));
+  }
+  .sizes__stage :global(.plush3d) {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    pointer-events: auto;
+  }
+  .sizes__readout {
+    position: absolute;
+    left: var(--gutter);
+    top: 8%;
+    display: grid;
+    line-height: 1;
+  }
+  .sizes__readout-name {
+    font-size: clamp(2.2rem, 6vw, 3.8rem);
+    color: var(--clay-deep);
+  }
+  .sizes__readout-in {
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+  .sizes__ruler {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 6%;
+    height: 8px;
+    border-radius: 99px;
+    background: repeating-linear-gradient(90deg, rgba(91, 64, 50, 0.25) 0 2px, transparent 2px 5.5%), rgba(91, 64, 50, 0.08);
+    overflow: hidden;
+  }
+  .sizes__ruler-fill {
+    display: block;
+    height: 100%;
+    width: 18%;
+    border-radius: inherit;
+    background: var(--ochre);
+    transition: width 0.7s var(--ease-spring);
+  }
+  .sizes__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .sizes__step {
+    min-height: 62vh;
+    display: flex;
+    align-items: center;
+    padding-block: 2rem;
+  }
+  .sizes__card {
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+    padding: 1.6rem 1.7rem;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow);
+    opacity: 0.45;
+    transform: scale(0.96);
+    transition: opacity 0.5s, transform 0.6s var(--ease-spring);
+  }
+  .sizes__step.is-active .sizes__card {
+    opacity: 1;
+    transform: none;
+  }
+  .sizes__card h3 {
+    font-size: 2.4rem;
+    margin: 0;
+  }
+  .sizes__inches {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--moss-deep);
+  }
+  .sizes__price {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1.3rem;
+  }
+
+  @media (min-width: 900px) {
+    .sizes__grid {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 3rem;
+    }
+    .sizes__stage {
+      top: 90px;
+      height: calc(100vh - 120px);
+      max-height: 720px;
+    }
+    .sizes__stage-inner {
+      background: none;
+      align-items: center;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+    .sizes__readout {
+      left: 0;
+    }
+    .sizes__stage :global(.plush3d) {
+      height: auto;
+      width: 100%;
+      max-width: 620px;
+    }
+    .sizes__step {
+      min-height: 80vh;
+    }
+    .sizes__card {
+      margin-inline: 0;
+    }
+  }
+</style>
+
+<script>
+  const plush = document.getElementById('size-plush');
+  const steps = Array.from(document.querySelectorAll<HTMLElement>('[data-size-step]'));
+  const nameEl = document.querySelector('[data-size-name]');
+  const inEl = document.querySelector('[data-size-in]');
+  const bar = document.querySelector<HTMLElement>('[data-size-bar]');
+  let current = -1;
+
+  function activate(i: number) {
+    if (i === current || !plush) return;
+    current = i;
+    const step = steps[i];
+    steps.forEach((s, j) => s.classList.toggle('is-active', j === i));
+    plush.dispatchEvent(new CustomEvent('plush:scale', { detail: Number(step.dataset.scale) }));
+    plush.dispatchEvent(new CustomEvent('plush:color', { detail: step.dataset.color }));
+    const img = plush.querySelector<HTMLImageElement>('.plush3d__fallback');
+    if (img) img.style.transform = `scale(${Number(step.dataset.scale) / 1.08})`;
+    if (nameEl) nameEl.textContent = step.querySelector('h3')?.textContent || '';
+    if (inEl) inEl.textContent = step.querySelector('.sizes__inches')?.textContent || '';
+    if (bar) bar.style.width = `${18 + (i / (steps.length - 1)) * 82}%`;
+  }
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) if (e.isIntersecting) activate(steps.indexOf(e.target as HTMLElement));
+    },
+    { rootMargin: '-45% 0px -45% 0px' }
+  );
+  steps.forEach((s) => io.observe(s));
+  activate(0);
+</script>

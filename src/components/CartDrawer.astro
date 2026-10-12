@@ -1,0 +1,330 @@
+---
+import Icon from './Icon.astro';
+---
+
+<div class="drawer" data-cart-drawer hidden>
+  <div class="drawer__scrim" data-cart-close></div>
+  <aside class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
+    <div class="drawer__head">
+      <h2 id="cart-title">Your basket</h2>
+      <button class="drawer__close" type="button" data-cart-close aria-label="Close cart"><Icon name="close" /></button>
+    </div>
+    <div class="drawer__body" data-cart-items></div>
+    <template data-cart-empty>
+      <div class="drawer__empty">
+        <svg viewBox="0 0 120 100" aria-hidden="true">
+          <path d="M20 70c0-24 18-42 40-42s40 18 40 42c0 12-18 18-40 18s-40-6-40-18Z" fill="#efe3d4" stroke="#5b4032" stroke-width="3"></path>
+          <circle cx="48" cy="62" r="3.5" fill="#5b4032"></circle><circle cx="72" cy="62" r="3.5" fill="#5b4032"></circle>
+          <path d="M53 74c4-3 10-3 14 0" fill="none" stroke="#5b4032" stroke-width="3" stroke-linecap="round"></path>
+        </svg>
+        <p class="hand">Your basket is empty</p>
+        <p>There are Gummikins waiting to meet you.</p>
+        <a href="/shop" class="btn">Shop Gummikins</a>
+      </div>
+    </template>
+    <div class="drawer__foot" data-cart-foot>
+      <dl class="drawer__totals">
+        <div><dt>Subtotal</dt><dd data-cart-subtotal>$0.00</dd></div>
+        <div><dt>Shipping</dt><dd data-cart-shipping>Calculated at checkout</dd></div>
+        <div><dt>Tax</dt><dd>Calculated at checkout</dd></div>
+      </dl>
+      <p class="drawer__gift"><Icon name="heart" /> A free Little Drop is tucked into every order, as supplies last.</p>
+      <button class="btn btn--block" type="button" data-checkout>Checkout <Icon name="arrow" /></button>
+      <p class="drawer__note" data-checkout-note hidden role="status">
+        This is a preview of the new site. Secure checkout will be connected before launch.
+      </p>
+    </div>
+  </aside>
+</div>
+
+<style>
+  .drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+  }
+  .drawer__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(63, 43, 33, 0.35);
+    animation: fade 0.3s both;
+  }
+  .drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+    box-shadow: -20px 0 50px -30px rgba(63, 43, 33, 0.6);
+    animation: slide 0.5s var(--ease-out) both;
+  }
+  .drawer__panel:focus {
+    outline: none;
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes slide {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  .drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px dashed rgba(91, 64, 50, 0.2);
+  }
+  .drawer__head h2 {
+    font-size: 2rem;
+    margin: 0;
+  }
+  .drawer__close {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  .drawer__close :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+  .drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 1.25rem;
+  }
+  .drawer__foot {
+    padding: 1.25rem;
+    border-top: 1px dashed rgba(91, 64, 50, 0.2);
+    background: var(--cream);
+  }
+  .drawer__totals {
+    margin: 0 0 0.9rem;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.95rem;
+  }
+  .drawer__totals div {
+    display: flex;
+    justify-content: space-between;
+  }
+  .drawer__totals dt {
+    color: var(--ink-soft);
+  }
+  .drawer__totals dd {
+    margin: 0;
+    font-weight: 650;
+  }
+  .drawer__gift {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--clay-deep);
+    font-weight: 600;
+  }
+  .drawer__gift :global(svg) {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+  .drawer__note {
+    margin: 0.8rem 0 0;
+    font-size: 0.88rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    background: rgba(212, 166, 79, 0.18);
+  }
+  :global(.drawer__empty) {
+    text-align: center;
+    padding: 3rem 1rem;
+    display: grid;
+    justify-items: center;
+  }
+  :global(.drawer__empty svg) {
+    width: 120px;
+    margin-bottom: 0.5rem;
+    animation: wobble 3s ease-in-out infinite;
+  }
+  :global(.drawer__empty .hand) {
+    font-size: 1.8rem;
+    margin: 0;
+  }
+  @keyframes wobble {
+    50% {
+      transform: rotate(-4deg) scale(1.03, 0.97);
+    }
+  }
+  :global(.line) {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(91, 64, 50, 0.08);
+  }
+  :global(.line img) {
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    background: var(--oat);
+    border-radius: 16px;
+  }
+  :global(.line__name) {
+    font-weight: 650;
+    margin: 0;
+  }
+  :global(.line__variant) {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  :global(.line__row) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+  }
+  :global(.qty) {
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid rgba(91, 64, 50, 0.15);
+    border-radius: 999px;
+  }
+  :global(.qty button) {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.2rem;
+    border-radius: 50%;
+  }
+  :global(.qty button:disabled) {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  :global(.qty span) {
+    min-width: 1.6em;
+    text-align: center;
+    font-weight: 650;
+  }
+  :global(.line__remove) {
+    border: 0;
+    background: none;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.3rem 0;
+  }
+</style>
+
+<script>
+  import { cart, money, type CartItem } from '../scripts/cart';
+
+  const drawer = document.querySelector<HTMLElement>('[data-cart-drawer]')!;
+  const panel = drawer.querySelector<HTMLElement>('.drawer__panel')!;
+  const list = drawer.querySelector<HTMLElement>('[data-cart-items]')!;
+  const foot = drawer.querySelector<HTMLElement>('[data-cart-foot]')!;
+  const empty = drawer.querySelector<HTMLTemplateElement>('[data-cart-empty]')!;
+  let lastFocus: HTMLElement | null = null;
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+  function line(i: CartItem) {
+    return `<div class="line" data-id="${esc(i.id)}">
+      <img src="${esc(i.image)}" alt="" width="84" height="84" loading="lazy" />
+      <div>
+        <p class="line__name"><a href="/shop/${esc(i.slug)}">${esc(i.name)}</a></p>
+        <p class="line__variant">${esc(i.variant)}</p>
+        <div class="line__row">
+          <div class="qty">
+            <button type="button" data-dec aria-label="Remove one">&minus;</button>
+            <span aria-live="polite">${i.qty}</span>
+            <button type="button" data-inc aria-label="Add one" ${i.qty >= i.max ? 'disabled' : ''}>+</button>
+          </div>
+          <strong>${money(i.price * i.qty)}</strong>
+        </div>
+        <button type="button" class="line__remove" data-remove>Remove</button>
+      </div>
+    </div>`;
+  }
+
+  function render() {
+    const items = cart.items();
+    const count = cart.count();
+    document.querySelectorAll<HTMLElement>('[data-cart-count]').forEach((el) => {
+      const changed = el.textContent !== String(count);
+      el.textContent = String(count);
+      el.hidden = count === 0;
+      if (changed && count) {
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+      }
+    });
+    if (!items.length) {
+      list.replaceChildren(empty.content.cloneNode(true));
+      foot.hidden = true;
+      return;
+    }
+    foot.hidden = false;
+    list.innerHTML = items.map(line).join('');
+    drawer.querySelector('[data-cart-subtotal]')!.textContent = money(cart.subtotal());
+    const ship = cart.shipping();
+    drawer.querySelector('[data-cart-shipping]')!.textContent = ship === null ? 'Calculated at checkout' : money(ship);
+  }
+
+  function open() {
+    lastFocus = document.activeElement as HTMLElement;
+    drawer.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    panel.focus();
+  }
+  function close() {
+    drawer.hidden = true;
+    document.documentElement.style.overflow = '';
+    lastFocus?.focus();
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-cart-open]')) open();
+    if (t.closest('[data-cart-close]')) close();
+    const row = t.closest<HTMLElement>('.line');
+    if (row) {
+      const id = row.dataset.id!;
+      const item = cart.items().find((i) => i.id === id);
+      if (!item) return;
+      if (t.closest('[data-inc]')) cart.setQty(id, item.qty + 1);
+      if (t.closest('[data-dec]')) cart.setQty(id, item.qty - 1);
+      if (t.closest('[data-remove]')) cart.remove(id);
+    }
+    if (t.closest('[data-checkout]')) {
+      const note = drawer.querySelector<HTMLElement>('[data-checkout-note]')!;
+      note.hidden = false;
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !drawer.hidden) close();
+  });
+  window.addEventListener('cart:change', render);
+  window.addEventListener('cart:open', open);
+  render();
+</script>
