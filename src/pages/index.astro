@@ -4,6 +4,7 @@ import Plush3D from '../components/Plush3D.astro';
 import ProductCard from '../components/ProductCard.astro';
 import Icon from '../components/Icon.astro';
 import SizeStory from '../components/SizeStory.astro';
+import HeroVideo from '../components/HeroVideo.astro';
 import Testimonials from '../components/Testimonials.astro';
 import InstagramGrid from '../components/InstagramGrid.astro';
 import FaqList from '../components/FaqList.astro';
@@ -84,6 +85,14 @@ const homeFaqs = faqs.flatMap((g) => g.items).filter((q) => q.home);
       </div>
     </div>
   </section>
+
+  <!-- FILM -->
+  <HeroVideo
+    mp4="/video/cloud-dream.mp4"
+    webm="/video/cloud-dream.webm"
+    poster="/video/cloud-dream-poster.jpg"
+    label="Three crocheted Gummikins in lavender, peach, and blue sitting on a knitted cloud among stars"
+  />
 
   <!-- RIBBON -->
   <div class="ribbon" aria-hidden="true">
