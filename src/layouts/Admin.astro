@@ -1,0 +1,193 @@
+---
+import '../styles/global.css';
+import Logo from '../components/Logo.astro';
+
+interface Props {
+  title: string;
+  bare?: boolean;
+}
+const { title, bare = false } = Astro.props;
+const base = Astro.locals.adminBase || '';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="same-origin" />
+    <title>{title} | Gummikins Studio</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="studio" data-base={base}>
+    {
+      !bare && (
+        <header class="studio-bar">
+          <a href={base} class="studio-bar__brand">
+            <Logo size="sm" /> <span class="studio-bar__badge">Studio</span>
+          </a>
+          <nav aria-label="Studio">
+            <a href={base}>Stock &amp; products</a>
+            <a href={`${base}/products/new`}>Add product</a>
+            <a href="/shop" target="_blank" rel="noopener">View shop</a>
+            <form method="post" action={`${base}/api/logout`}>
+              <button type="submit">Sign out</button>
+            </form>
+          </nav>
+        </header>
+      )
+    }
+    <main class="studio-main">
+      <slot />
+    </main>
+    <div class="toast" role="status" aria-live="polite" data-toast hidden></div>
+    <script>
+      // Shared toast for save confirmations.
+      const toast = document.querySelector<HTMLElement>('[data-toast]');
+      let timer: number | undefined;
+      window.addEventListener('studio:toast', ((e: CustomEvent<{ text: string; tone?: 'ok' | 'error' }>) => {
+        if (!toast) return;
+        toast.textContent = e.detail.text;
+        toast.dataset.tone = e.detail.tone || 'ok';
+        toast.hidden = false;
+        clearTimeout(timer);
+        timer = window.setTimeout(() => (toast.hidden = true), e.detail.tone === 'error' ? 6000 : 2200);
+      }) as EventListener);
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  body.studio {
+    background: #f3ece3;
+    font-size: 1rem;
+  }
+  body.studio::before {
+    display: none;
+  }
+  .studio-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding: 0.6rem clamp(1rem, 3vw, 2rem);
+    background: var(--chocolate);
+    color: var(--cream);
+  }
+  @media (max-width: 700px) {
+    .studio-bar {
+      position: static;
+    }
+  }
+  .studio-bar__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  .studio-bar__brand .logo {
+    color: var(--cream);
+    --logo-fill: var(--chocolate);
+  }
+  .studio-bar__badge {
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--ochre);
+    color: var(--chocolate-deep);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .studio-bar nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .studio-bar nav a,
+  .studio-bar nav button {
+    display: inline-block;
+    padding: 0.5rem 0.8rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--cream);
+    font: 600 0.9rem var(--font-body);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .studio-bar nav a:hover,
+  .studio-bar nav button:hover {
+    background: rgba(247, 239, 230, 0.12);
+  }
+  .studio-bar form {
+    margin: 0;
+  }
+  .studio-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 3vw, 2rem) 6rem;
+  }
+  .studio h1 {
+    font-size: clamp(2.2rem, 5vw, 3rem);
+  }
+  .panel {
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: clamp(1rem, 3vw, 1.6rem);
+    box-shadow: 0 1px 0 rgba(91, 64, 50, 0.06), 0 10px 30px -24px rgba(91, 64, 50, 0.5);
+  }
+  .notice {
+    padding: 1rem 1.2rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+  .notice p:last-child {
+    margin-bottom: 0;
+  }
+  .notice--warn {
+    background: #f6e8c9;
+    color: #6e4f14;
+  }
+  .notice--info {
+    background: #e3ecf1;
+    color: #34505f;
+  }
+  .notice--error {
+    background: #f5e0dd;
+    color: #8a3b35;
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    z-index: 50;
+    translate: -50% 0;
+    max-width: min(92vw, 520px);
+    padding: 0.8rem 1.3rem;
+    border-radius: 999px;
+    background: var(--moss-deep);
+    color: #fff;
+    font-weight: 650;
+    box-shadow: var(--shadow);
+    animation: toastIn 0.4s var(--ease-spring);
+  }
+  .toast[data-tone='error'] {
+    background: var(--clay-deep);
+    border-radius: 18px;
+  }
+  @keyframes toastIn {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+  }
+</style>

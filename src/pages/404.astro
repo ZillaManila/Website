@@ -2,6 +2,10 @@
 import Base from '../layouts/Base.astro';
 import Plush3D from '../components/Plush3D.astro';
 import { YARN } from '../scripts/gummikin3d.js';
+
+// Rendered on request so the secret portal link and missing products resolve through it.
+export const prerender = false;
+Astro.response.status = 404;
 ---
 
 <Base title="Page not found" noindex>

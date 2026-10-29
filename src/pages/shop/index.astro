@@ -2,14 +2,17 @@
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import Icon from '../../components/Icon.astro';
-import { getProducts } from '../../lib/products';
+import { categoryLabel, getProducts, shopCacheHeaders } from '../../lib/products';
+
+export const prerender = false;
+shopCacheHeaders(Astro.response.headers);
 
 const products = await getProducts();
+// Filters follow whatever categories the products use, so new collections appear automatically.
+const categories = [...new Set(products.map((p) => p.category))];
 const filters = [
   { key: 'all', label: 'Everything' },
-  { key: 'gummikins', label: 'Gummikins' },
-  { key: 'keychains', label: 'Keychains' },
-  { key: 'blankets', label: 'Blankets & sensory' },
+  ...categories.map((key) => ({ key, label: categoryLabel(key) })),
   { key: 'instock', label: 'Ready to ship' },
 ];
 ---
@@ -42,7 +45,7 @@ const filters = [
     <div class="shop__grid" data-grid>
       {
         products.map((p, i) => (
-          <div class="shop__item" data-category={p.data.category} data-instock={String(!p.data.specialOrder && p.data.colors.some((c) => c.stock > 0))}>
+          <div class="shop__item" data-category={p.category} data-instock={String(!p.specialOrder && p.colors.some((c) => c.stock > 0))}>
             <ProductCard product={p} index={i} />
           </div>
         ))

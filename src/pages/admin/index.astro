@@ -1,0 +1,392 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { listProducts, storageStatus } from '../../lib/store';
+import { uploadsEnabled } from '../../lib/media';
+import { categoryLabel, photo, totalStock, usd } from '../../lib/products';
+
+export const prerender = false;
+const base = Astro.locals.adminBase || '';
+const products = await listProducts({ includeHidden: true });
+const storage = await storageStatus();
+const photos = uploadsEnabled();
+const soldOut = products.filter((p) => !p.specialOrder && totalStock(p) === 0).length;
+const low = products.flatMap((p) => (p.specialOrder ? [] : p.colors.filter((c) => c.stock > 0 && c.stock <= 2))).length;
+const saved = Astro.url.searchParams.get('saved');
+const deleted = Astro.url.searchParams.get('deleted');
+---
+
+<Admin title="Stock & products">
+  {
+    storage === 'none' && (
+      <div class="notice notice--warn">
+        <p>
+          <strong>The database isn’t connected yet.</strong> The shop is showing the starter products, and changes can’t be saved. In
+          Vercel, open this project’s <strong>Storage</strong> tab and add a Neon Postgres database, then redeploy.
+        </p>
+      </div>
+    )
+  }
+  {
+    storage === 'local' && (
+      <div class="notice notice--info">
+        <p>You’re using a local test database on this computer. Changes here don’t affect the live site.</p>
+      </div>
+    )
+  }
+  {
+    !photos && (
+      <div class="notice notice--warn">
+        <p>
+          <strong>Photo uploads aren’t connected yet.</strong> In Vercel, open <strong>Storage</strong> and add a Blob store, then
+          redeploy.
+        </p>
+      </div>
+    )
+  }
+  {saved && <div class="notice notice--info" role="status"><p>Saved “{saved}”. It’s live in the shop within a few seconds.</p></div>}
+  {deleted && <div class="notice notice--info" role="status"><p>Deleted “{deleted}”.</p></div>}
+
+  <div class="dash-head">
+    <div>
+      <h1>Stock &amp; products</h1>
+      <p class="dash-sub">
+        {products.length} products · {soldOut} sold out · {low} colors running low
+      </p>
+    </div>
+    <a href={`${base}/products/new`} class="btn">+ Add product</a>
+  </div>
+
+  <div class="dash-tools">
+    <label class="search">
+      <span class="visually-hidden">Search products</span>
+      <input type="search" placeholder="Search products or colors…" data-search />
+    </label>
+    <p class="dash-hint">Change a number and it saves on its own.</p>
+  </div>
+
+  <ul class="plist" data-list>
+    {
+      products.map((p) => {
+        const total = totalStock(p);
+        return (
+          <li class="prow panel" data-slug={p.slug} data-text={`${p.name} ${p.colors.map((c) => c.name).join(' ')} ${p.category}`.toLowerCase()}>
+            <div class="prow__head">
+              <img src={photo(p.colors[0]?.image)} alt="" width="72" height="72" loading="lazy" />
+              <div class="prow__title">
+                <h2>
+                  <a href={`${base}/products/${p.slug}`}>{p.name}</a>
+                </h2>
+                <p>
+                  {categoryLabel(p.category)} · {p.priceFrom || p.options ? 'from ' : ''}
+                  {usd(p.price)}
+                  {!p.published && <span class="pill pill--hidden">Hidden</span>}
+                  {p.featured && <span class="pill">On home page</span>}
+                  {p.specialOrder && <span class="pill pill--special">Special order</span>}
+                  {!p.specialOrder && total === 0 && <span class="pill pill--out">Sold out</span>}
+                </p>
+              </div>
+              <div class="prow__actions">
+                <a class="btn btn--ghost btn--sm" href={`${base}/products/${p.slug}`}>Edit</a>
+                <a class="btn btn--ghost btn--sm" href={`/shop/${p.slug}`} target="_blank" rel="noopener">View</a>
+              </div>
+            </div>
+            {
+              !p.specialOrder && (
+                <ul class="stocks">
+                  {p.colors.map((c) => (
+                    <li class="stock" data-key={c.key} data-state={c.stock === 0 ? 'out' : c.stock <= 2 ? 'low' : 'ok'}>
+                      <span class="stock__swatch" style={`--c:${c.hex}`} />
+                      <label for={`s-${p.slug}-${c.key}`}>{c.name}</label>
+                      <div class="stepper">
+                        <button type="button" data-step="-1" aria-label={`One less ${c.name}`}>
+                          −
+                        </button>
+                        <input id={`s-${p.slug}-${c.key}`} type="number" inputmode="numeric" min="0" max="9999" value={c.stock} data-stock />
+                        <button type="button" data-step="1" aria-label={`One more ${c.name}`}>
+                          +
+                        </button>
+                      </div>
+                      <span class="stock__status" aria-live="polite" data-status />
+                    </li>
+                  ))}
+                </ul>
+              )
+            }
+          </li>
+        );
+      })
+    }
+  </ul>
+  <p class="empty" data-empty hidden>No products match that search.</p>
+</Admin>
+
+<style>
+  .dash-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .dash-head h1 {
+    margin: 0;
+  }
+  .dash-sub {
+    margin: 0.3rem 0 0;
+    color: var(--ink-soft);
+  }
+  .dash-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .search {
+    flex: 1 1 280px;
+  }
+  .search input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0.7rem 1rem;
+    border: 2px solid rgba(91, 64, 50, 0.15);
+    border-radius: 999px;
+    background: var(--paper);
+    font: inherit;
+    color: inherit;
+  }
+  .dash-hint {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+  .plist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .prow__head {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 0.9rem;
+    align-items: center;
+  }
+  .prow__head img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    border-radius: 14px;
+    background: var(--oat);
+  }
+  .prow__title h2 {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  .prow__title h2 a {
+    text-decoration: none;
+  }
+  .prow__title h2 a:hover {
+    text-decoration: underline;
+  }
+  .prow__title p {
+    margin: 0.2rem 0 0;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .prow__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.5rem;
+  }
+  @media (min-width: 700px) {
+    .prow__head {
+      grid-template-columns: 72px 1fr auto;
+    }
+    .prow__actions {
+      grid-column: auto;
+    }
+  }
+  :global(.btn--sm) {
+    min-height: 40px;
+    padding: 0.45em 1em;
+    font-size: 0.88rem;
+  }
+  .pill {
+    padding: 0.15em 0.6em;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(140, 159, 122, 0.22);
+    color: var(--moss-deep);
+  }
+  .pill--hidden {
+    background: rgba(91, 64, 50, 0.12);
+    color: var(--chocolate);
+  }
+  .pill--out {
+    background: rgba(181, 101, 95, 0.18);
+    color: var(--clay-deep);
+  }
+  .pill--special {
+    background: rgba(214, 140, 135, 0.22);
+    color: var(--clay-deep);
+  }
+  .stocks {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 1rem 0 0;
+    border-top: 1px dashed rgba(91, 64, 50, 0.18);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 0.6rem;
+  }
+  .stock {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 0.1rem 0.6rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(91, 64, 50, 0.08);
+  }
+  .stock[data-state='out'] {
+    background: #fbefed;
+  }
+  .stock[data-state='low'] {
+    background: #fdf6e6;
+  }
+  .stock__swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  }
+  .stock label {
+    font-weight: 650;
+    font-size: 0.92rem;
+  }
+  .stock__status {
+    grid-column: 2 / -1;
+    font-size: 0.75rem;
+    min-height: 1em;
+    color: var(--ink-soft);
+  }
+  .stock__status[data-tone='ok'] {
+    color: var(--moss-deep);
+  }
+  .stock__status[data-tone='error'] {
+    color: var(--clay-deep);
+  }
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid rgba(91, 64, 50, 0.15);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .stepper button {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    background: none;
+    font-size: 1.2rem;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  .stepper button:hover {
+    background: rgba(91, 64, 50, 0.07);
+  }
+  .stepper input {
+    width: 3.2em;
+    border: 0;
+    background: none;
+    text-align: center;
+    font: 700 1rem var(--font-body);
+    color: inherit;
+    -moz-appearance: textfield;
+  }
+  .stepper input::-webkit-inner-spin-button,
+  .stepper input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+  .empty {
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 2rem;
+  }
+</style>
+
+<script>
+  import { toast } from '../../scripts/studio-upload';
+
+  const base = document.body.dataset.base || '';
+  const timers = new Map<HTMLElement, number>();
+
+  async function save(row: HTMLElement, input: HTMLInputElement) {
+    const product = row.closest<HTMLElement>('[data-slug]')!;
+    const status = row.querySelector<HTMLElement>('[data-status]')!;
+    const stock = Math.max(0, Math.min(9999, Math.round(Number(input.value) || 0)));
+    input.value = String(stock);
+    status.textContent = 'Saving…';
+    status.dataset.tone = '';
+    try {
+      const res = await fetch(`${base}/api/stock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: product.dataset.slug, key: row.dataset.key, stock }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) location.reload();
+      if (!res.ok) throw new Error(data.error || 'Could not save.');
+      row.dataset.state = stock === 0 ? 'out' : stock <= 2 ? 'low' : 'ok';
+      status.textContent = stock === 0 ? 'Saved · sold out' : 'Saved';
+      status.dataset.tone = 'ok';
+    } catch (err) {
+      status.textContent = 'Not saved';
+      status.dataset.tone = 'error';
+      toast(err instanceof Error ? err.message : 'Could not save.', 'error');
+    }
+  }
+
+  function queue(row: HTMLElement, input: HTMLInputElement) {
+    clearTimeout(timers.get(row));
+    timers.set(row, window.setTimeout(() => save(row, input), 450));
+  }
+
+  document.querySelectorAll<HTMLElement>('.stock').forEach((row) => {
+    const input = row.querySelector<HTMLInputElement>('[data-stock]')!;
+    row.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((b) =>
+      b.addEventListener('click', () => {
+        input.value = String(Math.max(0, (Number(input.value) || 0) + Number(b.dataset.step)));
+        queue(row, input);
+      })
+    );
+    input.addEventListener('input', () => queue(row, input));
+  });
+
+  const search = document.querySelector<HTMLInputElement>('[data-search]');
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+  search?.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    let shown = 0;
+    document.querySelectorAll<HTMLElement>('.prow').forEach((el) => {
+      const match = !q || (el.dataset.text || '').includes(q);
+      el.hidden = !match;
+      if (match) shown++;
+    });
+    if (empty) empty.hidden = shown > 0;
+  });
+</script>

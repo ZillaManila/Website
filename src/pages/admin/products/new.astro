@@ -1,0 +1,26 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import ProductForm from '../../../components/admin/ProductForm.astro';
+import { listProducts } from '../../../lib/store';
+
+export const prerender = false;
+const base = Astro.locals.adminBase || '';
+const categories = [...new Set((await listProducts({ includeHidden: true })).map((p) => p.category))];
+---
+
+<Admin title="Add product">
+  <p class="back"><a href={base}>← Stock &amp; products</a></p>
+  <h1>Add a product</h1>
+  <p class="lede-sm">New products start hidden. Tick “Show in the shop” when it’s ready.</p>
+  <ProductForm categories={categories} />
+</Admin>
+
+<style>
+  .back {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+  .lede-sm {
+    color: var(--ink-soft);
+  }
+</style>

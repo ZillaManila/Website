@@ -1,0 +1,896 @@
+---
+import type { Product } from '../../lib/types';
+import { categoryLabel } from '../../lib/products';
+import { YARN } from '../../scripts/gummikin3d.js';
+
+interface Props {
+  product?: Product;
+  categories: string[];
+}
+const { product, categories } = Astro.props;
+const isNew = !product;
+const p: Product = product ?? {
+  slug: '',
+  name: '',
+  tagline: '',
+  category: categories[0] || 'gummikins',
+  size: '',
+  sizeLabel: '',
+  price: 0,
+  priceFrom: false,
+  shipping: undefined,
+  specialOrder: false,
+  featured: false,
+  published: false,
+  order: 100,
+  kind: 'gummikin',
+  materials: ['Soft acrylic yarn', 'Polyester fiberfill', 'Safety eyes', 'Embroidered cotton smile'],
+  feel: { softness: 4, squish: 4, weight: 2, texture: '', notes: '' },
+  care: 'Spot clean with a damp cloth and mild soap. Reshape gently and air dry. Do not tumble dry.',
+  options: undefined,
+  colors: [{ name: '', key: '', hex: '#9b2a2d', stock: 1, image: '' }],
+  gallery: [],
+  description: '',
+};
+const presets = Object.entries(YARN).map(([k, hex]) => ({ name: k[0].toUpperCase() + k.slice(1), hex }));
+const allCategories = [...new Set([...categories, p.category])];
+const feelRows = [
+  { key: 'softness', label: 'Softness', low: 'Firm', high: 'Cloud soft' },
+  { key: 'squish', label: 'Squish', low: 'Holds shape', high: 'Very squishy' },
+  { key: 'weight', label: 'Weight', low: 'Feather light', high: 'Settled & heavy' },
+] as const;
+const kinds = [
+  { v: 'gummikin', l: 'Gummikins (round plush)' },
+  { v: 'keychain', l: 'Gummikins keychain' },
+  { v: 'nest', l: 'Nest blanket' },
+  { v: 'blanket', l: 'Folded blanket' },
+  { v: 'none', l: 'No 3D view' },
+];
+---
+
+<form class="pform" data-product-form data-new={String(isNew)} data-previous-slug={p.slug} novalidate>
+  <div class="pform__errors notice notice--error" data-errors hidden role="alert"></div>
+
+  <section class="panel pform__section">
+    <h2>The basics</h2>
+    <div class="grid2">
+      <div class="field span2">
+        <label for="f-name">Product name</label>
+        <input id="f-name" name="name" value={p.name} required maxlength="120" placeholder="e.g. Small Gummikins" />
+      </div>
+      <div class="field span2">
+        <label for="f-tagline">Short tagline</label>
+        <input id="f-tagline" name="tagline" value={p.tagline} maxlength="240" placeholder="One friendly sentence shown under the name" />
+      </div>
+      <div class="field">
+        <label for="f-category">Collection</label>
+        <select id="f-category" name="category" data-category>
+          {allCategories.map((c) => <option value={c} selected={c === p.category}>{categoryLabel(c)}</option>)}
+          <option value="__new">+ New collection…</option>
+        </select>
+        <input class="mt" name="newCategory" placeholder="New collection name, e.g. Holiday" data-new-category hidden maxlength="40" />
+        <p class="hint">Collections become filter buttons in the shop.</p>
+      </div>
+      <div class="field">
+        <label for="f-sizeLabel">Size shown to customers</label>
+        <input id="f-sizeLabel" name="sizeLabel" value={p.sizeLabel} maxlength="60" placeholder={'e.g. About 5–6"'} />
+      </div>
+      <div class="field span2">
+        <label for="f-description">Description</label>
+        <textarea id="f-description" name="description" rows="7" placeholder="Tell customers about this piece.">{p.description}</textarea>
+        <p class="hint">Leave a blank line between paragraphs. Use *stars* for <em>italics</em> and **double stars** for <strong>bold</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel pform__section">
+    <h2>Price &amp; shipping</h2>
+    <div class="grid3">
+      <div class="field">
+        <label for="f-price">Price (USD)</label>
+        <input id="f-price" name="price" type="number" inputmode="decimal" min="0" step="0.01" value={p.price || ''} required />
+      </div>
+      <div class="field">
+        <label for="f-shipping">Shipping for one item (USD)</label>
+        <input id="f-shipping" name="shipping" type="number" inputmode="decimal" min="0" step="0.01" value={p.shipping ?? ''} placeholder="e.g. 7.95" />
+      </div>
+      <div class="field checks">
+        <label class="check"><input type="checkbox" name="priceFrom" checked={p.priceFrom} /> Show as “From $…”</label>
+        <label class="check"><input type="checkbox" name="specialOrder" checked={p.specialOrder} /> Special order only</label>
+        <p class="hint">Special orders show a “Request” button instead of Add to basket.</p>
+      </div>
+    </div>
+
+    <h3>Size options <span class="opt">optional</span></h3>
+    <p class="hint">Use this when one product comes in sizes with different prices, like the Nest Blanket. The first option is the default.</p>
+    <ul class="rows" data-options>
+      {
+        (p.options || []).map((o) => (
+          <li class="orow" data-option>
+            <input aria-label="Option name" name="oLabel" value={o.label} placeholder={'e.g. Cradle, about 24" across'} />
+            <input aria-label="Option price" name="oPrice" type="number" min="0" step="0.01" value={o.price} placeholder="Price" />
+            <input aria-label="Option shipping" name="oShipping" type="number" min="0" step="0.01" value={o.shipping} placeholder="Shipping" />
+            <button type="button" class="x" data-remove aria-label="Remove option">×</button>
+          </li>
+        ))
+      }
+    </ul>
+    <button type="button" class="btn btn--ghost btn--sm" data-add-option>+ Add a size option</button>
+    <template data-option-template>
+      <li class="orow" data-option>
+        <input aria-label="Option name" name="oLabel" placeholder='e.g. Cradle, about 24" across' />
+        <input aria-label="Option price" name="oPrice" type="number" min="0" step="0.01" placeholder="Price" />
+        <input aria-label="Option shipping" name="oShipping" type="number" min="0" step="0.01" placeholder="Shipping" />
+        <button type="button" class="x" data-remove aria-label="Remove option">×</button>
+      </li>
+    </template>
+  </section>
+
+  <section class="panel pform__section">
+    <h2>Colors, photos &amp; stock</h2>
+    <p class="hint">Each color has its own photo and stock count. Set stock to 0 to show it as sold out.</p>
+    <ul class="rows colors" data-colors>
+      {
+        p.colors.map((c) => (
+          <li class="crow" data-color data-key={c.key}>
+            <button type="button" class="photo-slot" data-photo-pick aria-label="Choose photo for this color">
+              <img src={c.image || '/images/placeholder/photo-coming.svg'} alt="" data-photo-preview />
+              <span class="photo-slot__label">{c.image ? 'Change photo' : 'Add photo'}</span>
+            </button>
+            <input type="hidden" name="cImage" value={c.image} />
+            <div class="crow__fields">
+              <div class="field">
+                <span class="lbl" aria-hidden="true">Color name</span>
+                <input aria-label="Color name" name="cName" value={c.name} placeholder="e.g. Cherry" list="yarn-presets" maxlength="40" />
+              </div>
+              <div class="field field--color">
+                <span class="lbl" aria-hidden="true">Swatch</span>
+                <input aria-label="Swatch color" name="cHex" type="color" value={c.hex} />
+              </div>
+              <div class="field field--stock">
+                <span class="lbl" aria-hidden="true">In stock</span>
+                <input aria-label="How many in stock" name="cStock" type="number" inputmode="numeric" min="0" max="9999" value={c.stock} />
+              </div>
+            </div>
+            <button type="button" class="x" data-remove aria-label="Remove color">×</button>
+          </li>
+        ))
+      }
+    </ul>
+    <button type="button" class="btn btn--ghost btn--sm" data-add-color>+ Add a color</button>
+    <datalist id="yarn-presets">{presets.map((y) => <option value={y.name} data-hex={y.hex} />)}</datalist>
+    <template data-color-template>
+      <li class="crow" data-color data-key="">
+        <button type="button" class="photo-slot" data-photo-pick aria-label="Choose photo for this color">
+          <img src="/images/placeholder/photo-coming.svg" alt="" data-photo-preview />
+          <span class="photo-slot__label">Add photo</span>
+        </button>
+        <input type="hidden" name="cImage" value="" />
+        <div class="crow__fields">
+          <div class="field">
+            <span class="lbl" aria-hidden="true">Color name</span>
+            <input aria-label="Color name" name="cName" placeholder="e.g. Cherry" list="yarn-presets" maxlength="40" />
+          </div>
+          <div class="field field--color">
+            <span class="lbl" aria-hidden="true">Swatch</span>
+            <input aria-label="Swatch color" name="cHex" type="color" value="#d4a64f" />
+          </div>
+          <div class="field field--stock">
+            <span class="lbl" aria-hidden="true">In stock</span>
+            <input aria-label="How many in stock" name="cStock" type="number" inputmode="numeric" min="0" max="9999" value="1" />
+          </div>
+        </div>
+        <button type="button" class="x" data-remove aria-label="Remove color">×</button>
+      </li>
+    </template>
+  </section>
+
+  <section class="panel pform__section">
+    <h2>More photos</h2>
+    <p class="hint">Extra angles shown under the main photo on the product page. The first one also appears when shoppers hover a product card.</p>
+    <ul class="gallery" data-gallery>
+      {
+        p.gallery.map((src) => (
+          <li data-gallery-item data-src={src}>
+            <img src={src} alt="" />
+            <button type="button" class="x" data-remove aria-label="Remove photo">×</button>
+          </li>
+        ))
+      }
+      <li class="gallery__add">
+        <button type="button" data-gallery-add>
+          <span aria-hidden="true">+</span> Add photos
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <section class="panel pform__section">
+    <h2>How it feels</h2>
+    <p class="hint">Shown on the product page so shoppers know what to expect in their hands.</p>
+    <div class="feels">
+      {
+        feelRows.map((r) => (
+          <fieldset class="feel">
+            <legend>{r.label}</legend>
+            <div class="feel__scale">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <label>
+                  <input type="radio" name={`feel-${r.key}`} value={n} checked={p.feel[r.key] === n} />
+                  <span>{n}</span>
+                </label>
+              ))}
+            </div>
+            <p class="feel__ends">
+              <span>{r.low}</span>
+              <span>{r.high}</span>
+            </p>
+          </fieldset>
+        ))
+      }
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="f-texture">Texture</label>
+        <textarea id="f-texture" name="texture" rows="3" maxlength="400" placeholder="What the surface feels like under your fingers">{p.feel.texture}</textarea>
+      </div>
+      <div class="field">
+        <label for="f-notes">In your hands</label>
+        <textarea id="f-notes" name="notes" rows="3" maxlength="600" placeholder="Size in the hand, weight, how it squishes">{p.feel.notes}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel pform__section">
+    <h2>Details</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="f-materials">Materials</label>
+        <textarea id="f-materials" name="materials" rows="5" placeholder="One per line">{p.materials.join('\n')}</textarea>
+        <p class="hint">One material per line.</p>
+      </div>
+      <div class="field">
+        <label for="f-care">Care</label>
+        <textarea id="f-care" name="care" rows="5" maxlength="600">{p.care}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel pform__section">
+    <h2>Display</h2>
+    <div class="grid3">
+      <div class="field checks">
+        <label class="check"><input type="checkbox" name="published" checked={p.published} /> Show in the shop</label>
+        <label class="check"><input type="checkbox" name="featured" checked={p.featured} /> Feature on the home page</label>
+        <p class="hint">The home page shows up to 8 featured products, in shop order.</p>
+        <p class="hint">Untick “Show in the shop” to keep a product hidden while you work on it.</p>
+      </div>
+      <div class="field">
+        <label for="f-order">Position in shop</label>
+        <input id="f-order" name="order" type="number" min="0" max="9999" value={p.order} />
+        <p class="hint">Lower numbers show first.</p>
+      </div>
+      <div class="field">
+        <label for="f-kind">3D view on product page</label>
+        <select id="f-kind" name="kind">
+          {kinds.map((k) => <option value={k.v} selected={k.v === p.kind}>{k.l}</option>)}
+        </select>
+      </div>
+    </div>
+    <details class="advanced">
+      <summary>Advanced</summary>
+      <div class="grid2">
+        <div class="field">
+          <label for="f-slug">Link name</label>
+          <input id="f-slug" name="slug" value={p.slug} maxlength="80" data-slug />
+          <p class="hint">gummikins.com/shop/<strong data-slug-preview>{p.slug || '…'}</strong>. Changing this breaks old links.</p>
+        </div>
+        <div class="field">
+          <label for="f-size">Size group</label>
+          <input id="f-size" name="size" value={p.size} maxlength="40" placeholder="e.g. small" />
+          <p class="hint">Internal label. Optional.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <div class="savebar">
+    {
+      !isNew && (
+        <button type="button" class="btn btn--ghost danger" data-delete>
+          Delete product
+        </button>
+      )
+    }
+    <span class="savebar__status" data-save-status aria-live="polite"></span>
+    <button type="submit" class="btn" data-save>{isNew ? 'Create product' : 'Save changes'}</button>
+  </div>
+  <input type="file" accept="image/*" hidden data-file-single />
+  <input type="file" accept="image/*" multiple hidden data-file-multi />
+</form>
+
+<style>
+  .pform {
+    display: grid;
+    gap: 1rem;
+  }
+  .pform__section h2 {
+    font-size: 1.9rem;
+    margin-bottom: 0.6rem;
+  }
+  .pform__section h3 {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 1.4rem 0 0.2rem;
+  }
+  .opt {
+    font-weight: 500;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+  }
+  .hint {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+  .field .hint {
+    margin: 0;
+  }
+  .grid2,
+  .grid3 {
+    display: grid;
+    gap: 1rem;
+    align-items: start;
+  }
+  @media (min-width: 720px) {
+    .grid2 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .grid3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .span2 {
+      grid-column: span 2;
+    }
+  }
+  .mt {
+    margin-top: 0.5rem;
+  }
+  .checks {
+    align-content: start;
+    gap: 0.6rem;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600 !important;
+    cursor: pointer;
+  }
+  .check input {
+    width: 22px;
+    height: 22px;
+    min-height: 0;
+    accent-color: var(--moss-deep);
+  }
+  .rows {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.8rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .orow {
+    display: grid;
+    grid-template-columns: 1fr 110px 110px 40px;
+    gap: 0.5rem;
+  }
+  .orow input,
+  .crow input:not([type='color']):not([type='hidden']) {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.6em 0.8em;
+    font: inherit;
+    color: inherit;
+    background: #fff;
+    border: 2px solid rgba(91, 64, 50, 0.15);
+    border-radius: 12px;
+  }
+  @media (max-width: 560px) {
+    .orow {
+      grid-template-columns: 1fr 1fr 40px;
+    }
+    .orow input:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+  .x {
+    width: 40px;
+    height: 40px;
+    align-self: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(91, 64, 50, 0.08);
+    color: var(--chocolate);
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+  .x:hover {
+    background: rgba(181, 101, 95, 0.2);
+    color: var(--clay-deep);
+  }
+  .crow {
+    display: grid;
+    grid-template-columns: 96px 1fr 40px;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 0.7rem;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(91, 64, 50, 0.08);
+  }
+  .crow__fields {
+    display: grid;
+    grid-template-columns: 1fr 70px 110px;
+    gap: 0.6rem;
+  }
+  @media (max-width: 560px) {
+    .crow {
+      grid-template-columns: 84px 1fr 40px;
+    }
+    .crow__fields {
+      grid-template-columns: 1fr 1fr;
+    }
+    .crow__fields .field:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+  .lbl {
+    font-size: 0.8rem;
+    font-weight: 650;
+  }
+  .field--color input {
+    width: 100%;
+    height: 46px;
+    padding: 3px;
+    border: 2px solid rgba(91, 64, 50, 0.15);
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .photo-slot {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    padding: 0;
+    border: 2px dashed rgba(91, 64, 50, 0.25);
+    border-radius: 14px;
+    background: var(--oat);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  @media (max-width: 560px) {
+    .photo-slot {
+      width: 84px;
+      height: 84px;
+    }
+  }
+  .photo-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .photo-slot__label {
+    position: absolute;
+    inset: auto 0 0;
+    padding: 0.2rem;
+    background: rgba(63, 43, 33, 0.7);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .photo-slot.is-busy::after {
+    content: 'Uploading…';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(251, 246, 239, 0.85);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .gallery {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.6rem;
+  }
+  .gallery :global(li) {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 14px;
+    background: var(--oat);
+    overflow: hidden;
+  }
+  .gallery :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .gallery :global(.x) {
+    border: 0;
+    border-radius: 50%;
+    color: var(--chocolate);
+    cursor: pointer;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+    background: rgba(251, 246, 239, 0.9);
+  }
+  .gallery__add button {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed rgba(91, 64, 50, 0.25);
+    border-radius: 14px;
+    background: none;
+    color: var(--chocolate);
+    font: 650 0.9rem var(--font-body);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    gap: 0.2rem;
+  }
+  .gallery__add span {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  .gallery__add.is-busy button {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .feels {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  @media (min-width: 720px) {
+    .feels {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .feel {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .feel legend {
+    font-weight: 650;
+    font-size: 0.92rem;
+    margin-bottom: 0.4rem;
+    padding: 0;
+  }
+  .feel__scale {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  .feel__scale label {
+    position: relative;
+  }
+  .feel__scale input {
+    position: absolute;
+    opacity: 0;
+  }
+  .feel__scale span {
+    display: grid;
+    place-items: center;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(94, 113, 80, 0.12);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .feel__scale input:checked + span {
+    background: var(--moss-deep);
+    color: #fff;
+  }
+  .feel__scale input:focus-visible + span {
+    outline: 3px solid var(--moss-deep);
+    outline-offset: 2px;
+  }
+  .feel__ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    margin: 0.2rem 0 0;
+  }
+  .advanced {
+    margin-top: 1.2rem;
+  }
+  .advanced summary {
+    cursor: pointer;
+    font-weight: 650;
+    margin-bottom: 0.8rem;
+  }
+  .savebar {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.6rem 0.6rem 1rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--paper) 94%, transparent);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+  }
+  .savebar__status {
+    margin-left: auto;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+  .danger {
+    --fg: var(--clay-deep);
+    border-color: rgba(181, 101, 95, 0.4);
+  }
+  @media (max-width: 560px) {
+    .savebar {
+      border-radius: 20px;
+      flex-wrap: wrap;
+    }
+    .savebar .btn[data-save] {
+      flex: 1;
+    }
+  }
+</style>
+
+<script>
+  import { toast, uploadPhoto } from '../../scripts/studio-upload';
+
+  const form = document.querySelector<HTMLFormElement>('[data-product-form]')!;
+  const base = document.body.dataset.base || '';
+  const isNew = form.dataset.new === 'true';
+  const errorsBox = form.querySelector<HTMLElement>('[data-errors]')!;
+  const status = form.querySelector<HTMLElement>('[data-save-status]')!;
+  const fileSingle = form.querySelector<HTMLInputElement>('[data-file-single]')!;
+  const fileMulti = form.querySelector<HTMLInputElement>('[data-file-multi]')!;
+  const presets = new Map(
+    Array.from(document.querySelectorAll<HTMLOptionElement>('#yarn-presets option')).map((o) => [o.value.toLowerCase(), o.dataset.hex!])
+  );
+  let dirty = false;
+
+  const slugify = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  const val = (name: string) => (form.elements.namedItem(name) as HTMLInputElement | null)?.value ?? '';
+  const checked = (name: string) => !!(form.elements.namedItem(name) as HTMLInputElement | null)?.checked;
+
+  // Link name follows the product name for new products until edited by hand.
+  const slugInput = form.querySelector<HTMLInputElement>('[data-slug]')!;
+  const slugPreview = form.querySelector<HTMLElement>('[data-slug-preview]')!;
+  let slugTouched = !isNew;
+  slugInput.addEventListener('input', () => {
+    slugTouched = true;
+    slugPreview.textContent = slugify(slugInput.value) || '…';
+  });
+  form.querySelector<HTMLInputElement>('#f-name')!.addEventListener('input', (e) => {
+    if (slugTouched) return;
+    slugInput.value = slugify((e.target as HTMLInputElement).value);
+    slugPreview.textContent = slugInput.value || '…';
+  });
+
+  // New collection
+  const cat = form.querySelector<HTMLSelectElement>('[data-category]')!;
+  const newCat = form.querySelector<HTMLInputElement>('[data-new-category]')!;
+  cat.addEventListener('change', () => {
+    newCat.hidden = cat.value !== '__new';
+    if (!newCat.hidden) newCat.focus();
+  });
+
+  // Repeaters
+  function addFrom(templateSel: string, listSel: string) {
+    const tpl = form.querySelector<HTMLTemplateElement>(templateSel)!;
+    const list = form.querySelector<HTMLElement>(listSel)!;
+    const node = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    list.appendChild(node);
+    node.querySelector<HTMLInputElement>('input:not([type=hidden])')?.focus();
+    dirty = true;
+    return node;
+  }
+  form.querySelector('[data-add-option]')!.addEventListener('click', () => addFrom('[data-option-template]', '[data-options]'));
+  form.querySelector('[data-add-color]')!.addEventListener('click', () => addFrom('[data-color-template]', '[data-colors]'));
+
+  form.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    const remove = t.closest('[data-remove]');
+    if (remove) {
+      const item = remove.closest('[data-option], [data-color], [data-gallery-item]');
+      if (item?.matches('[data-color]') && form.querySelectorAll('[data-color]').length === 1) {
+        toast('A product needs at least one color.', 'error');
+        return;
+      }
+      item?.remove();
+      dirty = true;
+    }
+    const pick = t.closest<HTMLElement>('[data-photo-pick]');
+    if (pick) {
+      pickTarget = pick.closest('[data-color]');
+      fileSingle.click();
+    }
+    if (t.closest('[data-gallery-add]')) fileMulti.click();
+  });
+
+  // Color name presets fill the swatch.
+  form.addEventListener('input', (e) => {
+    dirty = true;
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'cName') {
+      const hex = presets.get(t.value.trim().toLowerCase());
+      const swatch = t.closest('[data-color]')?.querySelector<HTMLInputElement>('input[name=cHex]');
+      if (hex && swatch) swatch.value = hex;
+    }
+  });
+
+  // Photo uploads
+  let pickTarget: HTMLElement | null = null;
+  fileSingle.addEventListener('change', async () => {
+    const file = fileSingle.files?.[0];
+    const row = pickTarget;
+    fileSingle.value = '';
+    if (!file || !row) return;
+    const slot = row.querySelector<HTMLElement>('[data-photo-pick]')!;
+    slot.classList.add('is-busy');
+    try {
+      const url = await uploadPhoto(base, file);
+      row.querySelector<HTMLInputElement>('input[name=cImage]')!.value = url;
+      row.querySelector<HTMLImageElement>('[data-photo-preview]')!.src = url;
+      row.querySelector('.photo-slot__label')!.textContent = 'Change photo';
+      dirty = true;
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Upload failed.', 'error');
+    } finally {
+      slot.classList.remove('is-busy');
+    }
+  });
+
+  fileMulti.addEventListener('change', async () => {
+    const files = Array.from(fileMulti.files || []);
+    fileMulti.value = '';
+    const add = form.querySelector<HTMLElement>('.gallery__add')!;
+    add.classList.add('is-busy');
+    for (const file of files) {
+      try {
+        const url = await uploadPhoto(base, file);
+        const li = document.createElement('li');
+        li.dataset.galleryItem = '';
+        li.dataset.src = url;
+        li.innerHTML = `<img alt="" /><button type="button" class="x" data-remove aria-label="Remove photo">×</button>`;
+        li.querySelector('img')!.src = url;
+        add.before(li);
+        dirty = true;
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Upload failed.', 'error');
+      }
+    }
+    add.classList.remove('is-busy');
+  });
+
+  function collect() {
+    const num = (v: string) => (v.trim() === '' ? undefined : Number(v));
+    const usedKeys = new Set<string>();
+    const colors = Array.from(form.querySelectorAll<HTMLElement>('[data-color]')).map((row) => {
+      const q = (n: string) => row.querySelector<HTMLInputElement>(`input[name=${n}]`)!.value;
+      const name = q('cName').trim();
+      let key = row.dataset.key || slugify(name) || 'color';
+      while (usedKeys.has(key)) key += '-2';
+      usedKeys.add(key);
+      return { name, key, hex: q('cHex'), stock: Number(q('cStock') || 0), image: q('cImage') };
+    });
+    const options = Array.from(form.querySelectorAll<HTMLElement>('[data-option]'))
+      .map((row) => {
+        const q = (n: string) => row.querySelector<HTMLInputElement>(`input[name=${n}]`)!.value;
+        return { label: q('oLabel').trim(), price: Number(q('oPrice') || 0), shipping: Number(q('oShipping') || 0) };
+      })
+      .filter((o) => o.label);
+    const category = cat.value === '__new' ? slugify(newCat.value) : cat.value;
+    const feelVal = (k: string) => Number((form.querySelector<HTMLInputElement>(`input[name=feel-${k}]:checked`) || { value: 3 }).value);
+    return {
+      slug: slugify(slugInput.value || val('name')),
+      name: val('name').trim(),
+      tagline: val('tagline').trim(),
+      category,
+      size: val('size').trim(),
+      sizeLabel: val('sizeLabel').trim(),
+      price: Number(val('price') || 0),
+      priceFrom: checked('priceFrom'),
+      shipping: num(val('shipping')),
+      specialOrder: checked('specialOrder'),
+      featured: checked('featured'),
+      published: checked('published'),
+      order: Number(val('order') || 100),
+      kind: val('kind'),
+      materials: val('materials')
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean),
+      feel: { softness: feelVal('softness'), squish: feelVal('squish'), weight: feelVal('weight'), texture: val('texture').trim(), notes: val('notes').trim() },
+      care: val('care').trim(),
+      options: options.length ? options : undefined,
+      colors,
+      gallery: Array.from(form.querySelectorAll<HTMLElement>('[data-gallery-item]')).map((li) => li.dataset.src!),
+      description: (form.elements.namedItem('description') as HTMLTextAreaElement).value,
+    };
+  }
+
+  function showErrors(list: string[]) {
+    errorsBox.innerHTML = `<p><strong>Please fix ${list.length === 1 ? 'this' : 'these'} before saving:</strong></p><ul>${list
+      .map((e) => `<li>${e.replace(/[&<>]/g, (c) => `&#${c.charCodeAt(0)};`)}</li>`)
+      .join('')}</ul>`;
+    errorsBox.hidden = false;
+    errorsBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  async function post(body: unknown) {
+    const res = await fetch(`${base}/api/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.status === 401) {
+      toast('You were signed out. Please sign in again.', 'error');
+      throw new Error('signed out');
+    }
+    return { res, data: (await res.json().catch(() => ({}))) as { ok?: boolean; errors?: string[]; slug?: string } };
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorsBox.hidden = true;
+    const product = collect();
+    const problems: string[] = [];
+    if (!product.name) problems.push('Give the product a name.');
+    if (!product.category) problems.push('Name the new collection.');
+    if (product.colors.some((c) => !c.name)) problems.push('Every color needs a name.');
+    if (problems.length) return showErrors(problems);
+
+    const btn = form.querySelector<HTMLButtonElement>('[data-save]')!;
+    btn.disabled = true;
+    status.textContent = 'Saving…';
+    try {
+      const { res, data } = await post({ product, previousSlug: isNew ? undefined : form.dataset.previousSlug });
+      if (!res.ok || !data.ok) return showErrors(data.errors || ['Could not save. Please try again.']);
+      dirty = false;
+      if (isNew || data.slug !== form.dataset.previousSlug) {
+        location.href = `${base}?saved=${encodeURIComponent(product.name)}`;
+        return;
+      }
+      status.textContent = 'Saved. Live in the shop within a few seconds.';
+      toast('Saved!');
+    } catch {
+      status.textContent = '';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  form.querySelector('[data-delete]')?.addEventListener('click', async () => {
+    const name = val('name') || 'this product';
+    if (!confirm(`Delete “${name}”? This can’t be undone.`)) return;
+    const { res, data } = await post({ action: 'delete', slug: form.dataset.previousSlug });
+    if (!res.ok || !data.ok) return showErrors(data.errors || ['Could not delete.']);
+    dirty = false;
+    location.href = `${base}?deleted=${encodeURIComponent(name)}`;
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (dirty) e.preventDefault();
+  });
+</script>

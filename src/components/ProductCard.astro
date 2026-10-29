@@ -1,20 +1,20 @@
 ---
-import { availability, leadColor, priceLabel, type Product } from '../lib/products';
+import { availability, leadColor, photo, priceLabel, type Product } from '../lib/products';
 interface Props {
   product: Product;
   index?: number;
 }
 const { product, index = 0 } = Astro.props;
-const d = product.data;
+const d = product;
 const lead = leadColor(product);
 const status = availability(product);
 const toneClass = { ok: '', low: 'badge--low', out: 'badge--out', special: 'badge--special' }[status.tone];
 ---
 
 <article class="card reveal" style={`--i:${index % 4}`} data-category={d.category} data-size={d.size}>
-  <a href={`/shop/${product.id}`} class="card__link">
+  <a href={`/shop/${product.slug}`} class="card__link">
     <div class="card__media" style={`--tint:${lead.hex}`}>
-      <img class="card__img" src={lead.image} alt={`${d.name} in ${lead.name}`} width="1200" height="1200" loading="lazy" />
+      <img class="card__img" src={photo(lead.image)} alt={`${d.name} in ${lead.name}`} width="1200" height="1200" loading="lazy" />
       {d.gallery[0] && <img class="card__img card__img--alt" src={d.gallery[0]} alt="" width="1200" height="1200" loading="lazy" />}
       <span class:list={['badge', 'card__badge', toneClass]}><span class="dot"></span>{status.label}</span>
     </div>

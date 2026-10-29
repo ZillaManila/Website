@@ -1,0 +1,38 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import ProductForm from '../../../components/admin/ProductForm.astro';
+import { listProducts } from '../../../lib/store';
+
+export const prerender = false;
+const base = Astro.locals.adminBase || '';
+const all = await listProducts({ includeHidden: true });
+const product = all.find((p) => p.slug === Astro.params.slug);
+if (!product) return Astro.redirect(base);
+const categories = [...new Set(all.map((p) => p.category))];
+---
+
+<Admin title={`Edit ${product.name}`}>
+  <p class="back"><a href={base}>← Stock &amp; products</a></p>
+  <div class="ehead">
+    <h1>{product.name}</h1>
+    <a class="btn btn--ghost btn--sm" href={`/shop/${product.slug}`} target="_blank" rel="noopener">View in shop</a>
+  </div>
+  <ProductForm product={product} categories={categories} />
+</Admin>
+
+<style>
+  .back {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+  .ehead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .ehead h1 {
+    margin: 0 0 1rem;
+  }
+</style>

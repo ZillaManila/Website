@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /cart
 
 Sitemap: https://gummikins.com/sitemap-index.xml
+Sitemap: https://gummikins.com/sitemap-products.xml

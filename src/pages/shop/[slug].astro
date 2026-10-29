@@ -1,30 +1,28 @@
 ---
-import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import Plush3D from '../../components/Plush3D.astro';
 import Icon from '../../components/Icon.astro';
-import { getProducts, colorStatus, leadColor, usd, type Product } from '../../lib/products';
+import { colorStatus, getProducts, leadColor, photo, shopCacheHeaders, usd } from '../../lib/products';
+import { getProduct } from '../../lib/store';
+import { renderMarkdown } from '../../lib/markdown';
 import { site } from '../../data/site';
 
-export async function getStaticPaths() {
-  const products = await getProducts();
-  return products.map((p) => ({ params: { slug: p.id }, props: { product: p, all: products } }));
-}
+export const prerender = false;
 
-interface Props {
-  product: Product;
-  all: Product[];
-}
-const { product, all } = Astro.props;
-const d = product.data;
-const { Content } = await render(product);
+const product = await getProduct(Astro.params.slug || '');
+if (!product) return Astro.rewrite('/404');
+shopCacheHeaders(Astro.response.headers);
+
+const d = product;
+const all = await getProducts();
+const descriptionHtml = renderMarkdown(d.description);
 const lead = leadColor(product);
 const leadIndex = d.colors.indexOf(lead);
 const option0 = d.options?.[0];
 const price = option0?.price ?? d.price;
 const shipping = option0?.shipping ?? d.shipping;
-const related = all.filter((p) => p.id !== product.id && !p.data.specialOrder).slice(0, 4);
+const related = all.filter((p) => p.slug !== product.slug && !p.specialOrder).slice(0, 4);
 const feelRows = [
   { label: 'Softness', value: d.feel.softness, low: 'Firm', high: 'Cloud soft' },
   { label: 'Squish', value: d.feel.squish, low: 'Holds shape', high: 'Very squishy' },
@@ -36,7 +34,7 @@ const jsonLd = {
   '@type': 'Product',
   name: `${d.name} | Gummikins`,
   description: d.tagline,
-  image: d.colors.map((c) => new URL(c.image, Astro.site).toString()),
+  image: d.colors.filter((c) => c.image).map((c) => new URL(c.image, Astro.site).toString()),
   brand: { '@type': 'Brand', name: 'Gummikins' },
   material: d.materials.join(', '),
   offers: d.colors.map((c) => ({
@@ -45,12 +43,12 @@ const jsonLd = {
     price: d.price,
     priceCurrency: 'USD',
     availability: d.specialOrder ? 'https://schema.org/PreOrder' : c.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
-    url: new URL(`/shop/${product.id}`, Astro.site).toString(),
+    url: new URL(`/shop/${product.slug}`, Astro.site).toString(),
   })),
 };
 ---
 
-<Base title={d.name} description={`${d.tagline} Handmade crochet, ${d.sizeLabel.toLowerCase()}. ${usd(price)}.`} image={lead.image} type="product">
+<Base title={d.name} description={`${d.tagline} Handmade crochet, ${d.sizeLabel.toLowerCase()}. ${usd(price)}.`} image={photo(lead.image)} type="product">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
   <nav class="wrap crumbs" aria-label="Breadcrumb">
@@ -59,20 +57,26 @@ const jsonLd = {
     <span aria-current="page">{d.name}</span>
   </nav>
 
-  <section class="wrap pdp" data-product data-slug={product.id} data-name={d.name}>
+  <section class="wrap pdp" data-product data-slug={product.slug} data-name={d.name}>
     <div class="pdp__media">
       <div class="pdp__stage" style={`--tint:${lead.hex}`}>
-        <img class="pdp__main" data-main src={lead.image} alt={`${d.name} in ${lead.name}`} width="1200" height="1200" fetchpriority="high" />
-        <div class="pdp__3d" data-3d-wrap hidden>
-          <Plush3D id="pdp-plush" kind={d.kind} color={lead.hex} image={lead.image} alt={`3D view of ${d.name}. Drag to spin, tap to squish.`} />
-        </div>
-        <button type="button" class="pdp__spin" data-3d-toggle aria-pressed="false">
-          <Icon name="spin" /> <span data-3d-label>Spin &amp; squish in 3D</span>
-        </button>
+        <img class="pdp__main" data-main src={photo(lead.image)} alt={`${d.name} in ${lead.name}`} width="1200" height="1200" fetchpriority="high" />
+        {
+          d.kind !== 'none' && (
+            <>
+              <div class="pdp__3d" data-3d-wrap hidden>
+                <Plush3D id="pdp-plush" kind={d.kind} color={lead.hex} image={photo(lead.image)} alt={`3D view of ${d.name}. Drag to spin, tap to squish.`} />
+              </div>
+              <button type="button" class="pdp__spin" data-3d-toggle aria-pressed="false">
+                <Icon name="spin" /> <span data-3d-label>Spin &amp; squish in 3D</span>
+              </button>
+            </>
+          )
+        }
       </div>
       <ul class="pdp__thumbs" aria-label="More photos">
         {
-          [lead.image, ...d.gallery].map((src, i) => (
+          [photo(lead.image), ...d.gallery.filter(Boolean)].map((src, i) => (
             <li>
               <button type="button" data-thumb={src} aria-label={`Show photo ${i + 1}`} aria-current={i === 0 ? 'true' : undefined}>
                 <img src={src} alt="" width="160" height="160" loading="lazy" />
@@ -111,7 +115,7 @@ const jsonLd = {
                       checked={i === leadIndex}
                       data-name={c.name}
                       data-hex={c.hex}
-                      data-image={c.image}
+                      data-image={photo(c.image)}
                       data-stock={c.stock}
                     />
                     <span class="visually-hidden">
@@ -146,7 +150,7 @@ const jsonLd = {
         {
           d.specialOrder ? (
             <div class="buy__actions">
-              <a href={`/custom?item=${product.id}`} class="btn btn--block">
+              <a href={`/custom?item=${product.slug}`} class="btn btn--block">
                 Request a Giant Gummikins <Icon name="arrow" />
               </a>
               <p class="buy__note">Made to order. We’ll confirm color, timing, and final price with you before anything is charged.</p>
@@ -202,7 +206,7 @@ const jsonLd = {
       </section>
 
       <div class="pdp__desc prose">
-        <Content />
+        <Fragment set:html={descriptionHtml} />
       </div>
 
       <div class="pdp__more">
@@ -245,7 +249,7 @@ const jsonLd = {
     </div>
     {
       d.specialOrder ? (
-        <a href={`/custom?item=${product.id}`} class="btn">Request</a>
+        <a href={`/custom?item=${product.slug}`} class="btn">Request</a>
       ) : (
         <button type="button" class="btn" data-sticky-add>Add to basket</button>
       )
@@ -686,8 +690,8 @@ const jsonLd = {
   const main = document.querySelector<HTMLImageElement>('[data-main]')!;
   const stage = document.querySelector<HTMLElement>('.pdp__stage')!;
   const plush = document.getElementById('pdp-plush');
-  const wrap3d = document.querySelector<HTMLElement>('[data-3d-wrap]')!;
-  const toggle3d = document.querySelector<HTMLButtonElement>('[data-3d-toggle]')!;
+  const wrap3d = document.querySelector<HTMLElement>('[data-3d-wrap]');
+  const toggle3d = document.querySelector<HTMLButtonElement>('[data-3d-toggle]');
   const thumbs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-thumb]'));
   const addBtn = document.querySelector<HTMLButtonElement>('[data-add]');
   const addLabel = document.querySelector<HTMLElement>('[data-add-label]');
@@ -710,12 +714,13 @@ const jsonLd = {
   }
 
   function set3d(on: boolean) {
+    if (!wrap3d || !toggle3d) return;
     wrap3d.hidden = !on;
     main.hidden = on;
     toggle3d.setAttribute('aria-pressed', String(on));
     toggle3d.querySelector('[data-3d-label]')!.textContent = on ? 'Back to photos' : 'Spin & squish in 3D';
   }
-  toggle3d.addEventListener('click', () => set3d(wrap3d.hidden));
+  toggle3d?.addEventListener('click', () => set3d(!!wrap3d?.hidden));
 
   thumbs.forEach((t) =>
     t.addEventListener('click', () => {

@@ -1,0 +1,7 @@
+---
+// Catch-all for addresses that match no page. It lets the middleware serve the
+// secret portal link on Vercel (whose own fallback would force a 404), and shows
+// the regular not-found page for everything else.
+export const prerender = false;
+return Astro.rewrite('/404');
+---

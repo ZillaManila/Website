@@ -8,13 +8,16 @@ import HeroVideo from '../components/HeroVideo.astro';
 import Testimonials from '../components/Testimonials.astro';
 import InstagramGrid from '../components/InstagramGrid.astro';
 import FaqList from '../components/FaqList.astro';
-import { getProducts } from '../lib/products';
+import { getProducts, shopCacheHeaders } from '../lib/products';
 import { reasons, site } from '../data/site';
 import { faqs } from '../data/faq';
 import { YARN } from '../scripts/gummikin3d.js';
 
+export const prerender = false;
+
 const products = await getProducts();
-const featured = products.filter((p) => p.data.featured).slice(0, 4);
+const featured = products.filter((p) => p.featured).slice(0, 8);
+shopCacheHeaders(Astro.response.headers);
 const swatches = [
   { key: 'cherry', name: 'Cherry' },
   { key: 'honey', name: 'Honey' },

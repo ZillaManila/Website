@@ -1,0 +1,45 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import Logo from '../../components/Logo.astro';
+export const prerender = false;
+const base = Astro.locals.adminBase || '';
+const error = Astro.url.searchParams.get('error');
+---
+
+<Admin title="Sign in" bare>
+  <div class="login">
+    <form class="panel login__card" method="post" action={`${base}/api/login`}>
+      <Logo size="lg" />
+      <h1>Studio sign in</h1>
+      <p>Manage products, photos, and stock for the Gummikins shop.</p>
+      {error && <p class="notice notice--error" role="alert">That password didn’t match. Please try again.</p>}
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required autofocus />
+      </div>
+      <button class="btn btn--block" type="submit">Sign in</button>
+    </form>
+  </div>
+</Admin>
+
+<style>
+  .login {
+    min-height: 80vh;
+    display: grid;
+    place-items: center;
+  }
+  .login__card {
+    width: min(420px, 100%);
+    display: grid;
+    gap: 1rem;
+    padding: 2rem;
+  }
+  .login__card h1 {
+    margin: 0.5rem 0 0;
+    font-size: 2.2rem;
+  }
+  .login__card p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+</style>
